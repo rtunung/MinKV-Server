@@ -4,6 +4,6 @@ project(MinKV)
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(MinKV main.cpp
-        server.cpp
+        request_response_server.cpp
         parser.cpp
         parser.h)
