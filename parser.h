@@ -42,7 +42,7 @@ namespace min_kv {
     // ----------------------
     class parser_error : public std::runtime_error {
     public:
-        explicit parser_error(const char *str) : std::runtime_error(str) {};
+        explicit parser_error(const char *str) : std::runtime_error(str) {}
     };
 
     // ----------------------

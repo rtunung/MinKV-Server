@@ -21,7 +21,7 @@ namespace min_kv {
 
     handler min_kv_server::build_handler() {
         return [this] (const std::string &msg, session &s) -> std::string {
-            command cmd;
+            command cmd = {command_type::FAILED_PARSE};
             std::stringstream reply_stream;
             try {
                 tokenizer tokens(msg);

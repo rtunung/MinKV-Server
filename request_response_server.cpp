@@ -27,10 +27,10 @@ namespace min_kv {
                     write(reply);
                     self->read_buffer_.clear();
                 } else if (ec == asio::error::eof) {
-                    std::cout << "The connection has been closed." << std::endl;
+                    std::cout << "INFO: A connection has been closed." << std::endl;
                 }
                 else {
-                    std::cout << "An error has occurred while reading on socket: " << ec.message() << std::endl;
+                    std::cerr << "ERROR: An error has occurred while reading on socket: " << ec.message() << std::endl;
                 }
             });
 
@@ -42,12 +42,13 @@ namespace min_kv {
             [this, self] (std::error_code ec, std::size_t size) {
                 if (closing_) {
                     socket_.close();
+                    std::cout << "INFO: A connection has been closed." << std::endl;
                     return;
                 }
                 if (!ec) {
                     read();
                 } else {
-                    std::cout << "An error has occurred while writing data to the socket: " << ec.message() << std::endl;
+                    std::cerr << "ERROR: An error has occurred while writing data to the socket: " << ec.message() << std::endl;
                 }
             });
     }
@@ -62,7 +63,7 @@ namespace min_kv {
         acceptor_.async_accept(
             [this](std::error_code ec, asio::ip::tcp::socket socket) {
                 if (!ec) {
-                    std::cout << "Opening new session..." << std::endl;
+                    std::cout << "INFO: Opening a new session." << std::endl;
                     std::make_shared<session>(std::move(socket), this->handler_)->start();
                 }
                 else

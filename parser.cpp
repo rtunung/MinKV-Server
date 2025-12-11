@@ -1,18 +1,24 @@
 #include "parser.h"
 
 #include <algorithm>
+#include <sstream>
 
 namespace min_kv {
     tokenizer::tokenizer(const std::string_view &src): src(src), pos(0) {
 
         while (!eof()) {
             skip_whitespace();
+            if (eof())
+                break;
             if (is_identifier_start())
                 tokenize_identifier();
             else if (is_string_literal_start())
                 tokenize_string();
-            else
-                break;
+            else {
+                std::stringstream es;
+                es << "unexpected character: '" << peek() << "'";
+                throw parser_error(es.str().c_str());
+            }
         }
     }
 
@@ -113,15 +119,23 @@ namespace min_kv {
 
         if (tokens.empty())
             throw parser_error("empty command");
+        if (tokens[0].type != token_type::command_identifier)
+            throw parser_error("invalid command identifier");
         if (tokens[0].value == "SET") {
             if (tokens.size() < 3)
-                throw parser_error("the SET command requires 2 arguments");
+                throw parser_error("The SET command requires 2 arguments");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the first argument for SET");
+            if (tokens[2].type != token_type::string_literal)
+                throw parser_error("Expected a string literal as the second argument for SET");
             cmd.type = command_type::SET;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
         } else if (tokens[0].value == "GET") {
             if (tokens.size() < 2)
-                throw parser_error("the GET command requires 1 argument");
+                throw parser_error("The GET command requires 1 argument");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the argument for GET");
             cmd.type = command_type::GET;
             cmd.args.push_back(tokens[1].value);
         } else if (tokens[0].value == "CLOSE") {
