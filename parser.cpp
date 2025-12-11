@@ -26,15 +26,12 @@ namespace min_kv {
     }
 
     void tokenizer::skip_whitespace() {
-        while (!eof() && std::isspace(peek())) {
+        while (!eof() && std::isspace(peek()))
             advance();
-        }
     }
 
     bool tokenizer::is_identifier_start() const {
-        if (const char c = peek(); std::isalpha(c) || c == '_')
-            return true;
-        return false;
+        return std::isalpha(peek()) || peek() == '_';
     }
 
     bool tokenizer::is_string_literal_start() const {
@@ -99,7 +96,7 @@ namespace min_kv {
                 }
                 advance();
             } else {
-                // Otherwise collect char for tokens
+                // Otherwise collect char for token
                 t.value.push_back(peek());
                 advance();
             }

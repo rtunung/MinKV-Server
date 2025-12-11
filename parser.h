@@ -29,6 +29,7 @@ namespace min_kv {
         SET,
         GET,
         CLOSE,
+        FAILED_PARSE,
     };
 
     struct command {
@@ -39,7 +40,6 @@ namespace min_kv {
     // ----------------------
     // Parser Error
     // ----------------------
-
     class parser_error : public std::runtime_error {
     public:
         explicit parser_error(const char *str) : std::runtime_error(str) {};
