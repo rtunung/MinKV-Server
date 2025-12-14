@@ -45,7 +45,7 @@ namespace min_kv {
     }
 
     bool tokenizer::is_command_identifier(std::string_view token_string) {
-        static const std::string commands[] = {"GET", "SET", "CLOSE"};
+        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE"};
         return std::ranges::any_of(commands, [&token_string](const auto& token)-> bool {
            return token_string == token;
         });
@@ -140,7 +140,15 @@ namespace min_kv {
             cmd.args.push_back(tokens[1].value);
         } else if (tokens[0].value == "CLOSE") {
             cmd.type = command_type::CLOSE;
-        } else {
+        } else if (tokens[0].value == "DELETE") {
+            if (tokens.size() < 2)
+                throw parser_error("The DELETE command requires 1 argument");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the argument for DELETE");
+            cmd.type = command_type::DELETE;
+            cmd.args.push_back(tokens[1].value);
+        }
+        else {
             throw parser_error("invalid command");
         }
 

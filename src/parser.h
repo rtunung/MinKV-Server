@@ -29,6 +29,7 @@ namespace min_kv {
         SET,
         GET,
         CLOSE,
+        DELETE,
         FAILED_PARSE,
     };
 

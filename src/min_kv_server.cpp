@@ -19,6 +19,10 @@ namespace min_kv {
         return key_value_storage_[ky];
     }
 
+    void min_kv_server::delete_key_value(const std::string &ky) {
+        key_value_storage_.erase(ky);
+    }
+
     handler min_kv_server::build_handler() {
         return [this] (const std::string &msg, session &s) -> std::string {
             command cmd = {command_type::FAILED_PARSE};
@@ -43,6 +47,10 @@ namespace min_kv {
                     break;
                     case command_type::CLOSE:
                     s.close();
+                    reply_stream << "OK";
+                    break;
+                    case command_type::DELETE:
+                    this->delete_key_value(cmd.args[0]);
                     reply_stream << "OK";
                     break;
                     default:

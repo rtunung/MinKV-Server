@@ -17,6 +17,7 @@ namespace min_kv {
         void run();
         void insert_key_value(const std::string& ky, std::string value);
         std::string get_value(const std::string& ky);
+        void delete_key_value(const std::string& ky);
 
     private:
         handler build_handler();
