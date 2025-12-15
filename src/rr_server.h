@@ -8,15 +8,15 @@
 
 namespace min_kv {
 
-    class request_response_server {
+    class rr_server {
     public:
 
         // Non-SSL Version
-        request_response_server(asio::io_context &context, unsigned short port,
+        rr_server(asio::io_context &context, unsigned short port,
             handler h);
 
         // SSL Version
-        request_response_server(asio::io_context& context, unsigned short port,
+        rr_server(asio::io_context& context, unsigned short port,
             const std::string& cert_file,const std::string& key_file, handler h);
 
     private:

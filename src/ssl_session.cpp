@@ -14,9 +14,7 @@ namespace min_kv {
     }
 
     void ssl_session::start(){
-        std::cout << "DEBUG: START" << std::endl;
         build_read_write();
-        std::cout << "DEBUG: BEFORE HANDSHAKE" << std::endl;
         perform_handshake();
     }
 

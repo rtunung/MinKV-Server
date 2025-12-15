@@ -29,10 +29,7 @@ namespace min_kv {
     }
 
     void session::build_read_write() {
-        std::cout << "Before shared_from_this" << std::endl;
         auto self = shared_from_this();
-
-        std::cout << "Building reader" << std::endl;
 
         this->read_function_ = [this, self](std::error_code ec, std::size_t size) {
             if (!ec) {
@@ -46,8 +43,6 @@ namespace min_kv {
                 std::cerr << "ERROR: An error has occurred while reading on socket: " << ec.message() << std::endl;
             }
         };
-
-        std::cout << "Building writer" << std::endl;
 
         this->write_function_ = [this, self] (std::error_code ec, std::size_t size) {
             if (closing_) {

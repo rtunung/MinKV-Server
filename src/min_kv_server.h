@@ -5,7 +5,7 @@
 
 #include <asio.hpp>
 
-#include "request_response_server.h"
+#include "rr_server.h"
 #include "parser.h"
 
 namespace min_kv {
@@ -28,7 +28,7 @@ namespace min_kv {
         handler build_handler();
 
         std::unordered_map<std::string, std::string> key_value_storage_;
-        std::unique_ptr<request_response_server> server_;
+        std::unique_ptr<rr_server> server_;
         asio::io_context io_;
         handler handler_;
     };

@@ -1,4 +1,4 @@
-#include "request_response_server.h"
+#include "rr_server.h"
 
 #include <iostream>
 #include <asio.hpp>
@@ -8,13 +8,13 @@
 
 namespace min_kv {
 
-    request_response_server::request_response_server(asio::io_context &context, unsigned short port, handler h) :
+    rr_server::rr_server(asio::io_context &context, unsigned short port, handler h) :
             acceptor_(context,asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),handler_(std::move(h)),
             use_ssl_(false), ssl_ctx_(asio::ssl::context::tls_server) {
         accept();
     }
 
-    request_response_server::request_response_server(asio::io_context &context, unsigned short port,
+    rr_server::rr_server(asio::io_context &context, unsigned short port,
         const std::string &cert_file, const std::string &key_file, handler h) :
             acceptor_(context,asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),handler_(std::move(h)),
             use_ssl_(true), ssl_ctx_(asio::ssl::context::tls_server){
@@ -31,7 +31,7 @@ namespace min_kv {
         accept();
     }
 
-    void request_response_server::accept() {
+    void rr_server::accept() {
         acceptor_.async_accept(
             [this](std::error_code ec, asio::ip::tcp::socket socket) {
                 if (!ec) {

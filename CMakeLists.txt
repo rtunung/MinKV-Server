@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 find_package(OpenSSL REQUIRED CONFIG)
 
 add_executable(MinKV src/main.cpp
-        src/request_response_server.cpp
+        src/rr_server.cpp
         src/parser.cpp
         src/parser.h
         src/min_kv_server.cpp

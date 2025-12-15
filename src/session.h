@@ -14,8 +14,6 @@ namespace min_kv {
     class session : public std::enable_shared_from_this<session> {
     public:
         virtual ~session() = default;
-
-        // Non-SSL version
         session(asio::ip::tcp::socket socket, handler h);
 
         virtual void start();
