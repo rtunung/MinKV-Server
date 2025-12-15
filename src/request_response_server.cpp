@@ -4,6 +4,8 @@
 #include <asio.hpp>
 #include <utility>
 
+#include "ssl_session.h"
+
 namespace min_kv {
 
     request_response_server::request_response_server(asio::io_context &context, unsigned short port, handler h) :
@@ -35,7 +37,8 @@ namespace min_kv {
                 if (!ec) {
                     if (use_ssl_) {
                         std::cout << "INFO: Opening a new TLS session." << std::endl;
-                        std::make_shared<session>(std::move(socket), ssl_ctx_, this->handler_)->start();
+                        std::make_shared<ssl_session>(std::move(socket), ssl_ctx_, this->handler_)->start();
+                        //std::make_shared<session>(std::move(socket), ssl_ctx_, this->handler_)->start();
                     } else {
                         std::cout << "INFO: Opening a new TCP session." << std::endl;
                         std::make_shared<session>(std::move(socket), this->handler_)->start();

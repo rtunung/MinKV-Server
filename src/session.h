@@ -13,30 +13,29 @@ namespace min_kv {
 
     class session : public std::enable_shared_from_this<session> {
     public:
+        virtual ~session() = default;
 
         // Non-SSL version
         session(asio::ip::tcp::socket socket, handler h);
 
-        // SSL version
-        session(asio::ip::tcp::socket socket, asio::ssl::context& ssl_ctx, handler h);
-
-        void start();
+        virtual void start();
         void close();
 
-    private:
-        void read();
-        void write(const std::string &str);
+    protected:
+        virtual void read();
+        virtual void write(const std::string &str);
 
-        void perform_handshake();
+        void build_read_write();
+        virtual void internal_close();
+
+        std::function<void(std::error_code, size_t)> read_function_;
+        std::function<void(std::error_code, size_t)> write_function_;
 
         asio::ip::tcp::socket socket_;
-
-        std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket>> ssl_stream_;
 
         handler handler_;
         std::basic_string<char> read_buffer_;
         bool closing_ = false;
-        const bool use_ssl_;
     };
 } // min_kv
 

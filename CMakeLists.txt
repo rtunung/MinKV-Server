@@ -12,6 +12,8 @@ add_executable(MinKV src/main.cpp
         src/min_kv_server.cpp
         src/min_kv_server.h
         src/session.cpp
-        src/session.h)
+        src/session.h
+        src/ssl_session.cpp
+        src/ssl_session.h)
 
 target_link_libraries(MinKV ssl crypto)
