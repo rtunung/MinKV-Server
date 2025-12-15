@@ -3,6 +3,8 @@ project(MinKV)
 
 set(CMAKE_CXX_STANDARD 23)
 
+find_package(OpenSSL REQUIRED CONFIG)
+
 add_executable(MinKV src/main.cpp
         src/request_response_server.cpp
         src/parser.cpp
@@ -11,3 +13,5 @@ add_executable(MinKV src/main.cpp
         src/min_kv_server.h
         src/session.cpp
         src/session.h)
+
+target_link_libraries(MinKV ssl crypto)

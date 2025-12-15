@@ -7,6 +7,10 @@ namespace min_kv {
         server_ = std::make_unique<request_response_server>(io_, port, build_handler());
     }
 
+    min_kv_server::min_kv_server(unsigned int port, const std::string &cert_file, const std::string &key_file) {
+        server_ = std::make_unique<request_response_server>(io_, port, cert_file, key_file, build_handler());
+    }
+
     void min_kv_server::run() {
         io_.run();
     }

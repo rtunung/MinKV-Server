@@ -12,7 +12,12 @@ namespace min_kv {
 
     class min_kv_server {
     public:
+
+        // Non-SSL Version
         explicit min_kv_server(unsigned int port);
+
+        // SSL Version
+        min_kv_server(unsigned int port, const std::string& cert_file,const std::string& key_file);
 
         void run();
         void insert_key_value(const std::string& ky, std::string value);
