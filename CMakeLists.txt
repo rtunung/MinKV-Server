@@ -8,4 +8,6 @@ add_executable(MinKV src/main.cpp
         src/parser.cpp
         src/parser.h
         src/min_kv_server.cpp
-        src/min_kv_server.h)
+        src/min_kv_server.h
+        src/session.cpp
+        src/session.h)
