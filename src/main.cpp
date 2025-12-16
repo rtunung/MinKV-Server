@@ -8,6 +8,7 @@ int main() {
     const std::string key_file = "server.key";
 
     min_kv::min_kv_server server(5555, cert_file, key_file);
+    //min_kv::min_kv_server server(5555);
     std::cout << "INFO: Starting MinKV Server" << std::endl;
     try {
         server.run();

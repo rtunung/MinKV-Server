@@ -2,13 +2,15 @@
 
 #include <iostream>
 
+#include "ssl_rr_server.h"
+
 namespace min_kv {
     min_kv_server::min_kv_server(unsigned int port) : io_(asio::io_context()) {
         server_ = std::make_unique<rr_server>(io_, port, build_handler());
     }
 
     min_kv_server::min_kv_server(unsigned int port, const std::string &cert_file, const std::string &key_file) {
-        server_ = std::make_unique<rr_server>(io_, port, cert_file, key_file, build_handler());
+        server_ = std::make_unique<ssl_rr_server>(io_, port, cert_file, key_file, build_handler());
     }
 
     void min_kv_server::run() {
