@@ -45,7 +45,7 @@ namespace min_kv {
     }
 
     bool tokenizer::is_command_identifier(std::string_view token_string) {
-        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE"};
+        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE", "APPEND"};
         return std::ranges::any_of(commands, [&token_string](const auto& token)-> bool {
            return token_string == token;
         });
@@ -147,6 +147,16 @@ namespace min_kv {
                 throw parser_error("Expected a key identifier as the argument for DELETE");
             cmd.type = command_type::DELETE;
             cmd.args.push_back(tokens[1].value);
+        } else if (tokens[0].value == "APPEND") {
+            if (tokens.size() < 3)
+                throw parser_error("The APPEND command requires 2 arguments");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the first argument for APPEND");
+            if (tokens[2].type != token_type::string_literal)
+                throw parser_error("Expected a string literal as the second argument for APPEND");
+            cmd.type = command_type::APPEND;
+            cmd.args.push_back(tokens[1].value);
+            cmd.args.push_back(tokens[2].value);
         }
         else {
             throw parser_error("invalid command");

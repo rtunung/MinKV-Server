@@ -30,6 +30,7 @@ namespace min_kv {
         GET,
         CLOSE,
         DELETE,
+        APPEND,
         FAILED_PARSE,
     };
 

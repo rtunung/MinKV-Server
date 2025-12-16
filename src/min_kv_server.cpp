@@ -59,7 +59,10 @@ namespace min_kv {
                     this->delete_key_value(cmd.args[0]);
                     reply_stream << "OK";
                     break;
-                    default:
+                    case command_type::APPEND:
+                    const auto new_str = this->get_value(cmd.args[0]).append(cmd.args[1]);
+                    this->insert_key_value(cmd.args[0], new_str);
+                    reply_stream << "OK";
                     break;
             }
 
