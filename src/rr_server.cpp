@@ -10,7 +10,6 @@ namespace min_kv {
 
     rr_server::rr_server(asio::io_context &context, unsigned short port, handler_function h) :
             acceptor(context,asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),handler(std::move(h)) {
-        //rr_server::accept();
     }
 
     void rr_server::accept() {

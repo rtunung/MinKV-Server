@@ -18,8 +18,6 @@ namespace min_kv {
 
         ssl_ctx.use_certificate_chain_file(cert_file);
         ssl_ctx.use_private_key_file(key_file, asio::ssl::context::pem);
-
-        //ssl_rr_server::accept();
     }
 
     void ssl_rr_server::accept() {

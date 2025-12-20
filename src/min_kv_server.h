@@ -1,12 +1,11 @@
 #ifndef KV_SERVER_KV_SERVER_H
 #define KV_SERVER_KV_SERVER_H
 
-#include <unordered_map>
-
 #include <asio.hpp>
 
 #include "rr_server.h"
 #include "parser.h"
+#include "key_value_storage.h"
 
 namespace min_kv {
 
@@ -19,15 +18,12 @@ namespace min_kv {
         // SSL Version
         min_kv_server(unsigned int port, const std::string& cert_file,const std::string& key_file);
 
-        void run();
-        void insert_key_value(const std::string& ky, std::string value);
-        std::string get_value(const std::string& ky);
-        void delete_key_value(const std::string& ky);
+        void run(std::size_t num_threads);
 
     private:
         handler_function build_handler();
 
-        std::unordered_map<std::string, std::string> key_value_storage;
+        key_value_storage kv_storage;
         std::unique_ptr<rr_server> server;
         asio::io_context io;
         handler_function handler;

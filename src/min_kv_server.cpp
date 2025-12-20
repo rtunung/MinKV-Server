@@ -13,21 +13,15 @@ namespace min_kv {
         server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
     }
 
-    void min_kv_server::run() {
+    void min_kv_server::run(std::size_t num_threads) {
         server->accept();
-        io.run();
-    }
-
-    void min_kv_server::insert_key_value(const std::string& ky, std::string value) {
-        key_value_storage.insert_or_assign(ky, value);
-    }
-
-    std::string min_kv_server::get_value(const std::string& ky) {
-        return key_value_storage[ky];
-    }
-
-    void min_kv_server::delete_key_value(const std::string &ky) {
-        key_value_storage.erase(ky);
+        asio::thread_pool thread_pool(num_threads);
+        for (std::size_t i = 0; i < num_threads; i++) {
+            asio::post(thread_pool, [this]() {
+                this->io.run();
+            });
+        }
+        thread_pool.join();
     }
 
     handler_function min_kv_server::build_handler() {
@@ -46,23 +40,22 @@ namespace min_kv {
 
             switch (cmd.type) {
                 case command_type::SET:
-                    this->insert_key_value(cmd.args[0], cmd.args[1]);
+                    kv_storage.insert_key_value(cmd.args[0], cmd.args[1]);
                     reply_stream << "OK";
                     break;
                     case command_type::GET:
-                    reply_stream << "RESULT \"" << this->get_value(cmd.args[0]) << "\"";
+                    reply_stream << "RESULT \"" << kv_storage.get_value(cmd.args[0]) << "\"";
                     break;
                     case command_type::CLOSE:
                     s.close();
                     reply_stream << "OK";
                     break;
                     case command_type::DELETE:
-                    this->delete_key_value(cmd.args[0]);
+                    kv_storage.delete_key_value(cmd.args[0]);
                     reply_stream << "OK";
                     break;
                     case command_type::APPEND:
-                    const auto new_str = this->get_value(cmd.args[0]).append(cmd.args[1]);
-                    this->insert_key_value(cmd.args[0], new_str);
+                    kv_storage.append_key_value(cmd.args[0], cmd.args[1]);
                     reply_stream << "OK";
                     break;
             }

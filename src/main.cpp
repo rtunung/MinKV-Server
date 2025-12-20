@@ -11,7 +11,7 @@ int main() {
     //min_kv::min_kv_server server(5555);
     std::cout << "INFO: Starting MinKV Server" << std::endl;
     try {
-        server.run();
+        server.run(4);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
