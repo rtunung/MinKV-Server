@@ -7,10 +7,10 @@
 
 
 namespace min_kv {
-    ssl_session::ssl_session(asio::ip::tcp::socket socket, asio::ssl::context &ssl_ctx, handler h) :
+    ssl_session::ssl_session(asio::ip::tcp::socket socket, asio::ssl::context &ssl_ctx, handler_function h) :
         session(std::move(socket), std::move(h))
     {
-        this->ssl_stream_ = std::make_unique<asio::ssl::stream<asio::ip::tcp::socket> >(std::move(socket_), ssl_ctx);
+        this->ssl_stream = std::make_unique<asio::ssl::stream<asio::ip::tcp::socket> >(std::move(session_socket), ssl_ctx);
     }
 
     void ssl_session::start(){
@@ -19,20 +19,20 @@ namespace min_kv {
     }
 
     void ssl_session::read() {
-        asio::async_read_until(*ssl_stream_,asio::dynamic_buffer(read_buffer_) ,"\n",read_function_);
+        asio::async_read_until(*ssl_stream,asio::dynamic_buffer(read_buffer) ,"\n",read_function);
     }
 
     void ssl_session::write(const std::string &str) {
-        asio::async_write(*ssl_stream_, asio::buffer(str, str.size()), write_function_);
+        asio::async_write(*ssl_stream, asio::buffer(str, str.size()), write_function);
     }
 
     void ssl_session::internal_close() {
-        ssl_stream_->shutdown();
+        ssl_stream->shutdown();
     }
 
     void ssl_session::perform_handshake() {
         auto self = shared_from_this();
-        ssl_stream_->async_handshake(asio::ssl::stream_base::server,
+        ssl_stream->async_handshake(asio::ssl::stream_base::server,
             [this, self](asio::error_code ec) {
                 if (!ec)
                     read();

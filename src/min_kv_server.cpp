@@ -5,31 +5,32 @@
 #include "ssl_rr_server.h"
 
 namespace min_kv {
-    min_kv_server::min_kv_server(unsigned int port) : io_(asio::io_context()) {
-        server_ = std::make_unique<rr_server>(io_, port, build_handler());
+    min_kv_server::min_kv_server(unsigned int port) : io(asio::io_context()) {
+        server = std::make_unique<rr_server>(io, port, build_handler());
     }
 
     min_kv_server::min_kv_server(unsigned int port, const std::string &cert_file, const std::string &key_file) {
-        server_ = std::make_unique<ssl_rr_server>(io_, port, cert_file, key_file, build_handler());
+        server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
     }
 
     void min_kv_server::run() {
-        io_.run();
+        server->accept();
+        io.run();
     }
 
     void min_kv_server::insert_key_value(const std::string& ky, std::string value) {
-        key_value_storage_.insert_or_assign(ky, value);
+        key_value_storage.insert_or_assign(ky, value);
     }
 
     std::string min_kv_server::get_value(const std::string& ky) {
-        return key_value_storage_[ky];
+        return key_value_storage[ky];
     }
 
     void min_kv_server::delete_key_value(const std::string &ky) {
-        key_value_storage_.erase(ky);
+        key_value_storage.erase(ky);
     }
 
-    handler min_kv_server::build_handler() {
+    handler_function min_kv_server::build_handler() {
         return [this] (const std::string &msg, session &s) -> std::string {
             command cmd = {command_type::FAILED_PARSE};
             std::stringstream reply_stream;

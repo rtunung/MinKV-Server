@@ -7,7 +7,7 @@
 #include <utility>
 
 namespace min_kv {
-    session::session(asio::ip::tcp::socket socket, handler h) : socket_(std::move(socket)), handler_(std::move(h)){
+    session::session(asio::ip::tcp::socket socket, handler_function h) : session_socket(std::move(socket)), handler(std::move(h)){
     }
 
     void session::start() {
@@ -16,25 +16,25 @@ namespace min_kv {
     }
 
     void session::close() {
-        this->closing_ = true;
+        this->closing = true;
     }
 
     void session::read() {
-        asio::async_read_until(socket_,asio::dynamic_buffer(read_buffer_) ,"\n",read_function_);
+        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer) ,"\n",read_function);
     }
 
     void session::write(const std::string &str) {
-        asio::async_write(socket_, asio::buffer(str, str.size()), write_function_);
+        asio::async_write(session_socket, asio::buffer(str, str.size()), write_function);
     }
 
     void session::build_read_write() {
         auto self = shared_from_this();
 
-        this->read_function_ = [this, self](std::error_code ec, std::size_t size) {
+        this->read_function = [this, self](std::error_code ec, std::size_t size) {
             if (!ec) {
-                std::string reply = handler_(std::string(read_buffer_), *this);
+                std::string reply = handler(std::string(read_buffer), *this);
                 write(reply);
-                self->read_buffer_.clear();
+                self->read_buffer.clear();
             } else if (ec == asio::error::eof) {
                 std::cout << "INFO: A connection has been closed." << std::endl;
             }
@@ -43,8 +43,8 @@ namespace min_kv {
             }
         };
 
-        this->write_function_ = [this, self] (std::error_code ec, std::size_t size) {
-            if (closing_) {
+        this->write_function = [this, self] (std::error_code ec, std::size_t size) {
+            if (closing) {
                 internal_close();
                 std::cout << "INFO: A connection has been closed." << std::endl;
                 return;
@@ -58,6 +58,6 @@ namespace min_kv {
     }
 
     void session::internal_close() {
-        this->socket_.close();
+        this->session_socket.close();
     }
 } // min_kv

@@ -25,12 +25,12 @@ namespace min_kv {
         void delete_key_value(const std::string& ky);
 
     private:
-        handler build_handler();
+        handler_function build_handler();
 
-        std::unordered_map<std::string, std::string> key_value_storage_;
-        std::unique_ptr<rr_server> server_;
-        asio::io_context io_;
-        handler handler_;
+        std::unordered_map<std::string, std::string> key_value_storage;
+        std::unique_ptr<rr_server> server;
+        asio::io_context io;
+        handler_function handler;
     };
 } // kv_server
 

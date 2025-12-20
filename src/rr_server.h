@@ -14,13 +14,13 @@ namespace min_kv {
 
         // Non-SSL Version
         rr_server(asio::io_context &context, unsigned short port,
-            handler h);
+            handler_function h);
 
-    protected:
         virtual void accept();
 
-        asio::ip::tcp::acceptor acceptor_;
-        handler handler_;
+    protected:
+        asio::ip::tcp::acceptor acceptor;
+        handler_function handler;
     };
 } // kv_server
 

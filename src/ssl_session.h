@@ -7,7 +7,7 @@
 namespace min_kv {
     class ssl_session : public session {
     public:
-        ssl_session(asio::ip::tcp::socket socket, asio::ssl::context& ssl_ctx, handler h);
+        ssl_session(asio::ip::tcp::socket socket, asio::ssl::context& ssl_ctx, handler_function h);
 
         void start() override;
 
@@ -17,7 +17,7 @@ namespace min_kv {
         void internal_close() override;
 
         void perform_handshake();
-        std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket>> ssl_stream_;
+        std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket>> ssl_stream;
     };
 } // min_kv
 
