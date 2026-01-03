@@ -13,7 +13,7 @@ namespace min_kv {
         server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
     }
 
-    void min_kv_server::run(std::size_t num_threads) {
+    void min_kv_server::run(const std::size_t num_threads) {
         server->accept();
         asio::thread_pool thread_pool(num_threads);
         for (std::size_t i = 0; i < num_threads; i++) {

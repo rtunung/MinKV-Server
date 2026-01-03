@@ -10,10 +10,12 @@ namespace min_kv {
         acc->second = std::move(value);
     }
 
-    std::string key_value_storage::get_value(const std::string &key) {
-        kv_map::accessor acc;
+    std::string key_value_storage::get_value(const std::string &key) const {
+        kv_map::const_accessor acc;
         kv_store.find(acc, key);
-        create_if_empty(acc, key);
+        if (acc.empty()) {
+            return "";
+        }
         return acc->second;
     }
 

@@ -12,7 +12,7 @@ namespace min_kv {
         key_value_storage();
 
         void insert_key_value(const std::string& key, std::string value);
-        std::string get_value(const std::string& key);
+        std::string get_value(const std::string& key) const;
         void delete_key_value(const std::string& key);
         void append_key_value(const std::string& key, const std::string &append);
 
