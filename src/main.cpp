@@ -1,17 +1,21 @@
 #include <iostream>
 
 #include "min_kv_server.h"
+#include "config.h"
 
-int main() {
+int main(int argc, char *argv[]) {
 
-    const std::string cert_file = "server.crt";
-    const std::string key_file = "server.key";
+    std::string config_file = "config.cfg";
+    if (argc >= 2) {
+        config_file = argv[1];
+    }
 
-    min_kv::min_kv_server server(5555, cert_file, key_file);
-    //min_kv::min_kv_server server(5555);
+    min_kv::config cfg(config_file);
+    min_kv::min_kv_server server(cfg);
+
     std::cout << "INFO: Starting MinKV Server" << std::endl;
     try {
-        server.run(4);
+        server.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
     }

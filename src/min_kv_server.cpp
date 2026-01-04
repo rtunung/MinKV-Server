@@ -3,17 +3,46 @@
 #include <iostream>
 
 #include "ssl_rr_server.h"
+#include "parser.h"
 
 namespace min_kv {
     min_kv_server::min_kv_server(unsigned int port) : io(asio::io_context()) {
+        num_threads = 1;
         server = std::make_unique<rr_server>(io, port, build_handler());
     }
 
     min_kv_server::min_kv_server(unsigned int port, const std::string &cert_file, const std::string &key_file) {
+        num_threads = 1;
         server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
     }
 
-    void min_kv_server::run(const std::size_t num_threads) {
+    min_kv_server::min_kv_server(config &conf) {
+        auto port_result = conf.getIntValue("port");
+        if (!port_result)
+            throw std::runtime_error("port not set");
+        int port = port_result.value();
+
+        auto tls = conf.getBoolValue("tls");
+        if (!tls)
+            throw std::runtime_error("tls not set");
+        bool tls_mode = tls.value();
+
+        auto num_threads_result = conf.getIntValue("num_threads");
+        if (!num_threads_result)
+            throw std::runtime_error("num_threads not set");
+        this->num_threads = num_threads_result.value();
+
+        if (tls_mode) {
+            std::string key_file = conf.getStringValue("key_file");
+            std::string cert_file = conf.getStringValue("cert_file");
+            server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
+        } else {
+            server = std::make_unique<rr_server>(io, port, build_handler());
+        }
+
+    }
+
+    void min_kv_server::run() {
         server->accept();
         asio::thread_pool thread_pool(num_threads);
         for (std::size_t i = 0; i < num_threads; i++) {

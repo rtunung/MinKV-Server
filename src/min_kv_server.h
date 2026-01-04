@@ -4,21 +4,24 @@
 #include <asio.hpp>
 
 #include "rr_server.h"
-#include "parser.h"
+#include "config.h"
 #include "key_value_storage.h"
 
 namespace min_kv {
 
     class min_kv_server {
     public:
-
         // Non-SSL Version
+        [[deprecated]]
         explicit min_kv_server(unsigned int port);
-
         // SSL Version
+        [[deprecated]]
         min_kv_server(unsigned int port, const std::string& cert_file,const std::string& key_file);
 
-        void run(std::size_t num_threads);
+        // Config File Version
+        explicit min_kv_server(config &conf);
+
+        void run();
 
     private:
         handler_function build_handler();
@@ -27,6 +30,8 @@ namespace min_kv {
         std::unique_ptr<rr_server> server;
         asio::io_context io;
         handler_function handler;
+
+        int num_threads;
     };
 } // kv_server
 
