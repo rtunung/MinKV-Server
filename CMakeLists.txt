@@ -24,7 +24,9 @@ add_executable(MinKV src/main.cpp
         src/config.cpp
         src/config.h
         src/user_db_connection.cpp
-        src/user_db_connection.h)
+        src/user_db_connection.h
+        src/crypto.cpp
+        src/crypto.h)
 
 target_link_libraries(MinKV ssl crypto TBB::tbb SQLite::SQLite3)
 

@@ -8,12 +8,15 @@
 
 #include <sqlite3.h>
 
+#include "crypto.h"
+
 namespace min_kv {
 struct user {
     std::string name;
     bool read_permission;
     bool write_permission;
-    std::string password;
+    hash_t password_hash;
+    salt_t password_salt;
 };
 
 class user_db_connection {

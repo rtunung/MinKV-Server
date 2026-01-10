@@ -6,13 +6,18 @@
 
 int main(int argc, char *argv[]) {
 
-    if (argc > 5) {
-        if (argv[1] == "add-user") {
+    if (argc >= 5) {
+        if (std::strcmp(argv[1], "add-user") == 0) {
+            std::cout << "Attempting to add user" << std::endl;
             std::string database = argv[2];
             std::string user = argv[3];
             std::string password = argv[4];
+            min_kv::salt_t salt = {0};
+            min_kv::hash_t hash = {0};
+            min_kv::hash_scrypt(password, salt, hash);
+
             min_kv::user_db_connection db(database);
-            db.create_user({user, true, true, password});
+            db.create_user({user, true, true, hash, salt});
             return 0;
         }
     }

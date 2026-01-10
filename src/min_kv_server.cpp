@@ -85,14 +85,14 @@ namespace min_kv {
 
             switch (cmd.type) {
                 case command_type::SET:
-                    if (authentication_required && s.write_permission()) {
+                    if (!authentication_required || authentication_required && s.write_permission()) {
                         kv_storage.insert_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
                     break;
                 case command_type::GET:
-                    if (authentication_required && s.read_permission())
+                    if (!authentication_required || authentication_required && s.read_permission())
                         reply_stream << "RESULT \"" << kv_storage.get_value(cmd.args[0]) << "\"";
                     else
                         reply_stream << permission_error;
@@ -102,24 +102,28 @@ namespace min_kv {
                     reply_stream << "OK";
                     break;
                 case command_type::DELETE:
-                    if (authentication_required && s.write_permission()) {
+                    if (!authentication_required || authentication_required && s.write_permission()) {
                         kv_storage.delete_key_value(cmd.args[0]);
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
                     break;
                 case command_type::APPEND:
-                    if (authentication_required && s.write_permission()) {
+                    if (!authentication_required || authentication_required && s.write_permission()) {
                         kv_storage.append_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
                     break;
                 case command_type::LOGIN:
+                    if (!authentication_required) {
+                        reply_stream << "ERROR \"User authentification is disabled\"";
+                        break;
+                    }
                     auto u = user_db->get_user(cmd.args[0]);
-                    if (u && u->password == cmd.args[1]) {
-                        s.set_user(std::move(u));
-                        reply_stream << "OK";
+                    if (u && verify_password_scrypt(cmd.args[1], u->password_salt, u->password_hash)) {
+                            s.set_user(std::move(u));
+                            reply_stream << "OK";
                     } else
                         reply_stream << "ERROR \"Authentication failed\"";
                     break;

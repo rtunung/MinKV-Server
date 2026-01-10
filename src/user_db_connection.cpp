@@ -1,5 +1,7 @@
 #include "user_db_connection.h"
 
+#include <cstring>
+
 namespace min_kv {
     std::unique_ptr<user> user_db_connection::user_result;
 
@@ -16,7 +18,7 @@ namespace min_kv {
             "name TEXT NOT NULL UNIQUE,"
             "read_permission INTEGER NOT NULL,"
             "write_permission INTEGER NOT NULL,"
-            "password TEXT NOT NULL);";
+            "password_hash TEXT NOT NULL);";
 
         char* err_msg = nullptr;
         rc = sqlite3_exec(db, create_table.c_str(), nullptr, nullptr, &err_msg);
@@ -32,17 +34,19 @@ namespace min_kv {
     }
 
     void user_db_connection::create_user(const user &u) {
+        combined_hash_t combined_hash = {};
+        combine_hash_salt(u.password_hash, u.password_salt, combined_hash);
+        std::string hash_base64 = encode_base64(combined_hash);
+
         std::stringstream sql_cmd;
-        sql_cmd << "INSERT INTO users (name, read_permission, write_permission, password) VALUES (";
+        sql_cmd << "INSERT INTO users (name, read_permission, write_permission, password_hash) VALUES (";
         sql_cmd << "'" << u.name << "', ";
         sql_cmd << u.read_permission << ", ";
         sql_cmd << u.write_permission << ", ";
-        sql_cmd << "'" << u.password << "');";
+        sql_cmd << "'" << hash_base64 << "');";
 
         char* err_msg = nullptr;
-        int rc;
-
-        rc = sqlite3_exec(db, sql_cmd.str().c_str(), nullptr, nullptr, &err_msg);
+        int rc = sqlite3_exec(db, sql_cmd.str().c_str(), nullptr, nullptr, &err_msg);
         if (rc != SQLITE_OK) {
             std::string err_str = "Can't create user: " + u.name + " \nSQLite error:  " + err_msg;
             sqlite3_free(err_msg);
@@ -53,8 +57,7 @@ namespace min_kv {
     std::unique_ptr<user> user_db_connection::get_user(const std::string &name) {
         std::string sql_cmd = "SELECT * FROM users WHERE name ='" + name + "';";
         char* err_msg = nullptr;
-        int rc;
-        rc = sqlite3_exec(db, sql_cmd.c_str(), callback_get_user, nullptr, &err_msg);
+        int rc = sqlite3_exec(db, sql_cmd.c_str(), callback_get_user, nullptr, &err_msg);
         if (rc != SQLITE_OK) {
             std::string err_str = "Could not find user: " + name + " \nSQLite error:  " + err_msg;
             sqlite3_free(err_msg);
@@ -69,7 +72,10 @@ namespace min_kv {
         tmp.name = argv[1];
         tmp.read_permission = std::atoi(argv[2]);
         tmp.write_permission = std::atoi(argv[3]);
-        tmp.password = argv[4];
+        std::string base64 = argv[4];
+        combined_hash_t combined_hash = {0};
+        decode_base64(base64, combined_hash);
+        split_combined_hash(combined_hash, tmp.password_hash, tmp.password_salt);
 
         user_result = std::make_unique<user>(std::move(tmp));
 
