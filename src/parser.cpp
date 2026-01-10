@@ -45,7 +45,7 @@ namespace min_kv {
     }
 
     bool tokenizer::is_command_identifier(std::string_view token_string) {
-        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE", "APPEND"};
+        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE", "APPEND", "LOGIN"};
         return std::ranges::any_of(commands, [&token_string](const auto& token)-> bool {
            return token_string == token;
         });
@@ -155,6 +155,16 @@ namespace min_kv {
             if (tokens[2].type != token_type::string_literal)
                 throw parser_error("Expected a string literal as the second argument for APPEND");
             cmd.type = command_type::APPEND;
+            cmd.args.push_back(tokens[1].value);
+            cmd.args.push_back(tokens[2].value);
+        } else if (tokens[0].value == "LOGIN") {
+            if (tokens.size() < 3)
+                throw parser_error("The LOGIN command requires 2 arguments");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the first argument for LOGIN");
+            if (tokens[2].type != token_type::string_literal)
+                throw parser_error("Expected a string literal as the second argument for LOGIN");
+            cmd.type = command_type::LOGIN;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
         }

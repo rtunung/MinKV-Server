@@ -31,6 +31,7 @@ namespace min_kv {
         CLOSE,
         DELETE,
         APPEND,
+        LOGIN,
         FAILED_PARSE,
     };
 

@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <fstream>
 
-
 namespace min_kv {
     class config {
     public:

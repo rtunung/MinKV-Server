@@ -7,6 +7,8 @@
 #include <asio/ssl/stream.hpp>
 #include <functional>
 
+#include "user_db_connection.h"
+
 namespace min_kv {
     class session;
     typedef std::function<std::string(const std::string&, session &s)> handler_function;
@@ -18,6 +20,12 @@ namespace min_kv {
 
         virtual void start();
         void close();
+
+        bool is_authenticated() const;
+        bool read_permission() const;
+        bool write_permission() const;
+
+        void set_user(std::unique_ptr<user> new_user);
 
     protected:
         virtual void read();
@@ -34,6 +42,8 @@ namespace min_kv {
         handler_function handler;
         std::basic_string<char> read_buffer;
         bool closing = false;
+
+        std::unique_ptr<user> session_user;
     };
 } // min_kv
 

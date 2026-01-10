@@ -6,6 +6,17 @@
 
 int main(int argc, char *argv[]) {
 
+    if (argc > 5) {
+        if (argv[1] == "add-user") {
+            std::string database = argv[2];
+            std::string user = argv[3];
+            std::string password = argv[4];
+            min_kv::user_db_connection db(database);
+            db.create_user({user, true, true, password});
+            return 0;
+        }
+    }
+
     std::string config_file = "config.cfg";
     if (argc >= 2) {
         config_file = argv[1];

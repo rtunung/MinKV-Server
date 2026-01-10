@@ -19,6 +19,26 @@ namespace min_kv {
         this->closing = true;
     }
 
+    bool session::is_authenticated() const {
+        return session_user != nullptr;
+    }
+
+    bool session::read_permission() const {
+        if (session_user != nullptr)
+            return session_user->read_permission;
+        return false;
+    }
+
+    bool session::write_permission() const {
+        if (session_user != nullptr)
+            return session_user->write_permission;
+        return false;
+    }
+
+    void session::set_user(std::unique_ptr<user> new_user) {
+        this->session_user = std::move(new_user);
+    }
+
     void session::read() {
         asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer) ,"\n",read_function);
     }

@@ -6,6 +6,7 @@
 #include "rr_server.h"
 #include "config.h"
 #include "key_value_storage.h"
+#include "user_db_connection.h"
 
 namespace min_kv {
 
@@ -32,6 +33,9 @@ namespace min_kv {
         handler_function handler;
 
         int num_threads;
+
+        bool authentication_required;
+        std::unique_ptr<user_db_connection> user_db;
     };
 } // kv_server
 
