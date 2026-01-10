@@ -1,5 +1,6 @@
 #include <iostream>
 
+#define ASIO_STANDALONE
 #include "min_kv_server.h"
 #include "config.h"
 
