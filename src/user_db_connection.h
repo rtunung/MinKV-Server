@@ -24,7 +24,7 @@ class user_db_connection {
     explicit user_db_connection(const std::string &db_path);
     ~user_db_connection();
 
-    void create_user(const user &u);
+    void create_user(user &u);
     std::unique_ptr<user> get_user(const std::string &name);
 
     private:

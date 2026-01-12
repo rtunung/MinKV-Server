@@ -16,10 +16,8 @@ int main(int argc, char *argv[]) {
             min_kv::hash_scrypt(password, salt, hash);
 
             min_kv::user_db_connection db(database);
-            db.create_user({user, true, true, hash, salt});
-            OPENSSL_cleanse(password.data(), password.size());
-            OPENSSL_cleanse(hash.data(), hash.size());
-            OPENSSL_cleanse(salt.data(), salt.size());
+            min_kv::user usr = {user, true, true, hash, salt};
+            db.create_user(usr);
 
             std::cout << "Added user " << user << std::endl;
             return 0;

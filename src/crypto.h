@@ -17,13 +17,13 @@ namespace min_kv {
     constexpr size_t COMBINED_HASH_LEN = HASH_LEN + SALT_LEN;
     using combined_hash_t = std::array<uint8_t, COMBINED_HASH_LEN>;
 
-    void combine_hash_salt(const hash_t& hash, const salt_t& salt, combined_hash_t& combined_hash);
-    void split_combined_hash(const combined_hash_t& combined_hash, hash_t& hash, salt_t& salt);
-    bool hash_scrypt(const std::string& pass, salt_t& salt_result, hash_t& hash_result);
-    bool verify_password_scrypt(const std::string& pass, const salt_t& salt, const hash_t& expected_hash);
+    void combine_hash_salt(hash_t &input_hash, salt_t &input_salt, combined_hash_t &output_combined_hash);
+    void split_combined_hash(combined_hash_t &input_combined_hash, hash_t &output_hash, salt_t &output_salt) ;
+    bool hash_scrypt(std::string &input_pass, salt_t &output_salt, hash_t &output_hash);
+    bool verify_password_scrypt(std::string &input_pass, salt_t &input_salt, hash_t &expected_hash);
 
-    std::string encode_base64(const combined_hash_t& combined);
-    void decode_base64(const std::string& encoded, combined_hash_t& decoded);
+    void encode_base64(combined_hash_t &input_combined, std::string &output_encoded);
+    void decode_base64(std::string &input_encoded, combined_hash_t &output_decoded);
 } // min_kv
 
 #endif //MINKV_CRYPTO_H
