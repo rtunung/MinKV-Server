@@ -62,6 +62,12 @@ namespace min_kv {
                 this->io.run();
             });
         }
+
+        asio::signal_set signals(io, SIGINT, SIGTERM);
+        signals.async_wait([this](auto err, int i) {
+            std::cout << "INFO: Closing Server\n";
+            this->io.stop();
+        });
         thread_pool.join();
     }
 
