@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include <openssl/crypto.h>
+
 namespace min_kv {
     std::unique_ptr<user> user_db_connection::user_result;
 
@@ -37,6 +39,7 @@ namespace min_kv {
         combined_hash_t combined_hash = {};
         combine_hash_salt(u.password_hash, u.password_salt, combined_hash);
         std::string hash_base64 = encode_base64(combined_hash);
+        OPENSSL_cleanse(combined_hash.data(), combined_hash.size());
 
         std::stringstream sql_cmd;
         sql_cmd << "INSERT INTO users (name, read_permission, write_permission, password_hash) VALUES (";
@@ -44,6 +47,7 @@ namespace min_kv {
         sql_cmd << u.read_permission << ", ";
         sql_cmd << u.write_permission << ", ";
         sql_cmd << "'" << hash_base64 << "');";
+        OPENSSL_cleanse(hash_base64.data(), hash_base64.size());
 
         char* err_msg = nullptr;
         int rc = sqlite3_exec(db, sql_cmd.str().c_str(), nullptr, nullptr, &err_msg);
@@ -68,17 +72,18 @@ namespace min_kv {
     }
 
     int user_db_connection::callback_get_user(void *, int argc, char **argv, char **colName) {
-        user tmp;
-        tmp.name = argv[1];
-        tmp.read_permission = std::atoi(argv[2]);
-        tmp.write_permission = std::atoi(argv[3]);
+        auto tmp = std::make_unique<user>();
+        tmp->name = argv[1];
+        tmp->read_permission = std::atoi(argv[2]);
+        tmp->write_permission = std::atoi(argv[3]);
         std::string base64 = argv[4];
         combined_hash_t combined_hash = {0};
         decode_base64(base64, combined_hash);
-        split_combined_hash(combined_hash, tmp.password_hash, tmp.password_salt);
+        split_combined_hash(combined_hash, tmp->password_hash, tmp->password_salt);
+        OPENSSL_cleanse(combined_hash.data(), combined_hash.size());
+        OPENSSL_cleanse(argv[4], std::strlen(argv[4]));
 
-        user_result = std::make_unique<user>(std::move(tmp));
-
+        user_result = std::move(tmp);
         return 0;
     }
 } // min_kv

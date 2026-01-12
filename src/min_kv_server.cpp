@@ -132,6 +132,10 @@ namespace min_kv {
                             reply_stream << "OK";
                     } else
                         reply_stream << "ERROR \"Authentication failed\"";
+                    if (u) {
+                        OPENSSL_cleanse(u->password_hash.data(), u->password_hash.size());
+                        OPENSSL_cleanse(u->password_hash.data(), u->password_hash.size());
+                    }
                     break;
             }
 

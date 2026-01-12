@@ -45,6 +45,5 @@ namespace min_kv {
 
     void decode_base64(const std::string &encoded, combined_hash_t &decoded) {
         EVP_DecodeBlock(decoded.data(), reinterpret_cast<const unsigned char*>(encoded.data()),encoded.size());
-
     }
 } // min_kv
