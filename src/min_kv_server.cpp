@@ -127,7 +127,10 @@ namespace min_kv {
                         break;
                     }
                     auto u = user_db->get_user(cmd.args[0]);
+                    auto weak_u = std::weak_ptr<user>(u);
                     if (u && verify_password_scrypt(cmd.args[1], u->password_salt, u->password_hash)) {
+                            OPENSSL_cleanse(u->password_hash.data(), u->password_hash.size());
+                            OPENSSL_cleanse(u->password_hash.data(), u->password_hash.size());
                             s.set_user(std::move(u));
                             reply_stream << "OK";
                     } else

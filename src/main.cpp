@@ -8,7 +8,6 @@ int main(int argc, char *argv[]) {
 
     if (argc >= 5) {
         if (std::strcmp(argv[1], "add-user") == 0) {
-            std::cout << "Attempting to add user" << std::endl;
             std::string database = argv[2];
             std::string user = argv[3];
             std::string password = argv[4];
@@ -21,6 +20,8 @@ int main(int argc, char *argv[]) {
             OPENSSL_cleanse(password.data(), password.size());
             OPENSSL_cleanse(hash.data(), hash.size());
             OPENSSL_cleanse(salt.data(), salt.size());
+
+            std::cout << "Added user " << user << std::endl;
             return 0;
         }
     }

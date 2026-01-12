@@ -1,6 +1,7 @@
 #include "user_db_connection.h"
 
 #include <cstring>
+#include <format>
 
 #include <openssl/crypto.h>
 
@@ -41,16 +42,14 @@ namespace min_kv {
         std::string hash_base64 = encode_base64(combined_hash);
         OPENSSL_cleanse(combined_hash.data(), combined_hash.size());
 
-        std::stringstream sql_cmd;
-        sql_cmd << "INSERT INTO users (name, read_permission, write_permission, password_hash) VALUES (";
-        sql_cmd << "'" << u.name << "', ";
-        sql_cmd << u.read_permission << ", ";
-        sql_cmd << u.write_permission << ", ";
-        sql_cmd << "'" << hash_base64 << "');";
+        std::string sql_cmd = std::format(
+            "INSERT INTO users (name, read_permission, write_permission, password_hash) VALUES ("
+            "'{}', {}, {}, '{}');", u.name, u.read_permission, u.write_permission, hash_base64);
         OPENSSL_cleanse(hash_base64.data(), hash_base64.size());
 
         char* err_msg = nullptr;
-        int rc = sqlite3_exec(db, sql_cmd.str().c_str(), nullptr, nullptr, &err_msg);
+        int rc = sqlite3_exec(db, sql_cmd.c_str(), nullptr, nullptr, &err_msg);
+        OPENSSL_cleanse(sql_cmd.data(), sql_cmd.size());
         if (rc != SQLITE_OK) {
             std::string err_str = "Can't create user: " + u.name + " \nSQLite error:  " + err_msg;
             sqlite3_free(err_msg);
@@ -59,7 +58,7 @@ namespace min_kv {
     }
 
     std::unique_ptr<user> user_db_connection::get_user(const std::string &name) {
-        std::string sql_cmd = "SELECT * FROM users WHERE name ='" + name + "';";
+        std::string sql_cmd = std::format("SELECT * FROM users WHERE name = '{}';", name);
         char* err_msg = nullptr;
         int rc = sqlite3_exec(db, sql_cmd.c_str(), callback_get_user, nullptr, &err_msg);
         if (rc != SQLITE_OK) {
@@ -82,6 +81,7 @@ namespace min_kv {
         split_combined_hash(combined_hash, tmp->password_hash, tmp->password_salt);
         OPENSSL_cleanse(combined_hash.data(), combined_hash.size());
         OPENSSL_cleanse(argv[4], std::strlen(argv[4]));
+        OPENSSL_cleanse(base64.data(), base64.size());
 
         user_result = std::move(tmp);
         return 0;
