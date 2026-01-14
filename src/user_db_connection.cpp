@@ -37,6 +37,7 @@ namespace min_kv {
     }
 
     void user_db_connection::create_user(user &u) {
+        const std::lock_guard<std::mutex> lock(mutex);
         combined_hash_t combined_hash = {};
         combine_hash_salt(u.password_hash, u.password_salt, combined_hash);
         std::string hash_base64;
@@ -58,6 +59,7 @@ namespace min_kv {
     }
 
     std::unique_ptr<user> user_db_connection::get_user(const std::string &name) {
+        const std::lock_guard<std::mutex> lock(mutex);
         std::string sql_cmd = std::format("SELECT * FROM users WHERE name = '{}';", name);
         char* err_msg = nullptr;
         int rc = sqlite3_exec(db, sql_cmd.c_str(), callback_get_user, nullptr, &err_msg);

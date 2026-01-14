@@ -29,6 +29,7 @@ class user_db_connection {
 
     private:
     sqlite3* db{};
+    std::mutex mutex{};
 
     static int callback_get_user(void*, int argc, char** argv, char** colName);
     static std::unique_ptr<user> user_result;
