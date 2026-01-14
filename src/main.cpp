@@ -6,7 +6,18 @@
 
 int main(int argc, char *argv[]) {
 
-    if (argc >= 5) {
+    auto print_usage = [argv]() {
+        std::cout << "Usage:\n";
+        std::cout << argv[0] << " <config-file>                                    -- Launch with specified config file\n";
+        std::cout << argv[0] << " add-user <sqlite-database> <username> <password> -- Create new user inside the specified database\n";
+    };
+
+    if (argc >= 2) {
+        if (std::strcmp(argv[1], "help") == 0)
+            print_usage();
+    }
+
+    if (argc == 5) {
         if (std::strcmp(argv[1], "add-user") == 0) {
             std::string database = argv[2];
             std::string user = argv[3];
@@ -22,18 +33,18 @@ int main(int argc, char *argv[]) {
             std::cout << "Added user " << user << std::endl;
             return 0;
         }
+        print_usage();
     }
 
     std::string config_file = "config.cfg";
-    if (argc >= 2) {
+    if (argc == 2) {
         config_file = argv[1];
     }
 
-    min_kv::config cfg(config_file);
-    min_kv::min_kv_server server(cfg);
-
-    std::cout << "INFO: Starting MinKV Server" << std::endl;
     try {
+        min_kv::config cfg(config_file);
+        min_kv::min_kv_server server(cfg);
+        std::cout << "INFO: Starting MinKV Server" << std::endl;
         server.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
