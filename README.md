@@ -48,9 +48,10 @@ User credentials are stored in an SQLite3 database. By default, this database is
 ### Adding Users
 The recommended way of adding new users is to use built-in helper command:
 ```
-./MinKV add-user users.db username password
+./MinKV add-user users.db username
 ```
-This command calculates the password hash correctly and inserts the user into the database.
+The program will ask the user for the password of the new user.
+Afterward the command calculates the password hash correctly and inserts the user into the database.
 
 For more advanced database administration, you can use the ``sqlite3`` CLI or any other database tool that supports sqlite3.
 
