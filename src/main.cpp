@@ -22,20 +22,24 @@ int add_user(min_kv::user_db_connection &db, const std::string &name) {
     std::getline(std::cin, pass2);
     std::cout << std::endl;
 
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
+
     if (pass1 == pass2) {
         min_kv::user usr;
         usr.name = name;
         usr.read_permission = true;
         usr.write_permission = true;
         min_kv::hash_scrypt(pass1, usr.password_salt, usr.password_hash);
-        db.create_user(usr);
+        try {
+            db.create_user(usr);
+        } catch (std::exception &e) {
+            std::cout << "ERROR: " << e.what() << std::endl;
+        }
         std::cout << "INFO: Successfully created user." << std::endl;
     } else {
         std::cout << "ERROR: Passwords do not match" << std::endl;
         error_code = -1;
     }
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
 
     OPENSSL_cleanse(pass1.data(), pass1.size());
     OPENSSL_cleanse(pass2.data(), pass2.size());
@@ -59,7 +63,6 @@ int main(int argc, char *argv[]) {
 
     if (argc == 4) {
         if (std::strcmp(argv[1], "add-user") == 0) {
-
             min_kv::user_db_connection db(argv[2]);
             return add_user(db, argv[3]);
         }
