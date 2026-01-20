@@ -40,7 +40,7 @@ namespace min_kv {
     }
 
     void session::read() {
-        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer) ,"\n",read_function);
+        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer) ,"\r\n",read_function);
     }
 
     void session::write(const std::string &str) {
