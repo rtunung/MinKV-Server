@@ -4,7 +4,7 @@
 
 #include <string>
 #include <sstream>
-#include <memory>
+#include <mutex>
 
 #include <sqlite3.h>
 
@@ -25,14 +25,11 @@ class user_db_connection {
     ~user_db_connection();
 
     void create_user(user &u);
-    std::unique_ptr<user> get_user(const std::string &name);
+    std::optional<user> get_user(const std::string &name);
 
     private:
     sqlite3* db{};
     std::mutex mutex{};
-
-    static int callback_get_user(void*, int argc, char** argv, char** colName);
-    static std::unique_ptr<user> user_result;
 };
 } // min_kv
 

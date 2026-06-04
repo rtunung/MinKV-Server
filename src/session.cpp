@@ -20,23 +20,23 @@ namespace min_kv {
     }
 
     bool session::is_authenticated() const {
-        return session_user != nullptr;
+        return session_user.has_value();
     }
 
     bool session::read_permission() const {
-        if (session_user != nullptr)
+        if (session_user.has_value())
             return session_user->read_permission;
         return false;
     }
 
     bool session::write_permission() const {
-        if (session_user != nullptr)
+        if (session_user.has_value())
             return session_user->write_permission;
         return false;
     }
 
-    void session::set_user(std::unique_ptr<user> new_user) {
-        this->session_user = std::move(new_user);
+    void session::set_user(const std::optional<user> &new_user) {
+        this->session_user = new_user;
     }
 
     void session::read() {

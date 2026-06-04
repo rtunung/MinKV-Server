@@ -6,7 +6,6 @@
 #include <openssl/crypto.h>
 
 namespace min_kv {
-    std::unique_ptr<user> user_db_connection::user_result;
 
     user_db_connection::user_db_connection(const std::string &db_path) {
         int rc = sqlite3_open(db_path.c_str(), &db);
@@ -43,47 +42,44 @@ namespace min_kv {
         std::string hash_base64;
         encode_base64(combined_hash, hash_base64);
 
-        std::string sql_cmd = std::format(
+        std::string sql_string =
             "INSERT INTO users (name, read_permission, write_permission, password_hash) VALUES ("
-            "'{}', {}, {}, '{}');", u.name, u.read_permission, u.write_permission, hash_base64);
+            "?, ?, ?, ?);";
+        sqlite3_stmt *stmt = nullptr;
+        sqlite3_prepare_v2(db, sql_string.c_str(), -1, &stmt, nullptr);
+        sqlite3_bind_text(stmt, 1, u.name.c_str(), -1, nullptr);
+        sqlite3_bind_int(stmt, 2, u.read_permission);
+        sqlite3_bind_int(stmt, 3, u.write_permission);
+        sqlite3_bind_text(stmt, 4, hash_base64.c_str(), -1, nullptr);
+
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
         OPENSSL_cleanse(hash_base64.data(), hash_base64.size());
-
-        char* err_msg = nullptr;
-        int rc = sqlite3_exec(db, sql_cmd.c_str(), nullptr, nullptr, &err_msg);
-        OPENSSL_cleanse(sql_cmd.data(), sql_cmd.size());
-        if (rc != SQLITE_OK) {
-            std::string err_str = "Can't create user: " + u.name + " \nSQLite error:  " + err_msg;
-            sqlite3_free(err_msg);
-            throw std::runtime_error(err_str);
-        }
     }
 
-    std::unique_ptr<user> user_db_connection::get_user(const std::string &name) {
+    std::optional<user> user_db_connection::get_user(const std::string &name) {
         const std::lock_guard<std::mutex> lock(mutex);
-        std::string sql_cmd = std::format("SELECT * FROM users WHERE name = '{}';", name);
-        char* err_msg = nullptr;
-        int rc = sqlite3_exec(db, sql_cmd.c_str(), callback_get_user, nullptr, &err_msg);
-        if (rc != SQLITE_OK) {
-            std::string err_str = "Could not find user: " + name + " \nSQLite error:  " + err_msg;
-            sqlite3_free(err_msg);
-            throw std::runtime_error(err_str);
-        }
+        std::string sql_string = "SELECT * FROM users WHERE name = ?;";
 
-        return std::move(user_result);
-    }
+        sqlite3_stmt *stmt = nullptr;
+        sqlite3_prepare_v2(db, sql_string.c_str(), -1, &stmt, nullptr);
+        sqlite3_bind_text(stmt, 1, name.c_str(), -1, nullptr);
 
-    int user_db_connection::callback_get_user(void *, int argc, char **argv, char **colName) {
-        auto tmp = std::make_unique<user>();
-        tmp->name = argv[1];
-        tmp->read_permission = std::atoi(argv[2]);
-        tmp->write_permission = std::atoi(argv[3]);
-        std::string base64 = argv[4];
+        auto result  = sqlite3_step(stmt);
+        if (result == 101)
+            return {};
+
+        user found_user;
+        found_user.name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+        found_user.read_permission = sqlite3_column_int(stmt, 2);
+        found_user.write_permission = sqlite3_column_int(stmt, 3);
+
+        std::string base64 = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
         combined_hash_t combined_hash = {0};
         decode_base64(base64, combined_hash);
-        split_combined_hash(combined_hash, tmp->password_hash, tmp->password_salt);
-        OPENSSL_cleanse(argv[4], std::strlen(argv[4]));
+        split_combined_hash(combined_hash, found_user.password_hash, found_user.password_salt);
 
-        user_result = std::move(tmp);
-        return 0;
+        sqlite3_finalize(stmt);
+        return found_user;
     }
 } // min_kv

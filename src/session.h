@@ -25,7 +25,7 @@ namespace min_kv {
         bool read_permission() const;
         bool write_permission() const;
 
-        void set_user(std::unique_ptr<user> new_user);
+        void set_user(const std::optional<user> &new_user);
 
     protected:
         virtual void read();
@@ -43,7 +43,7 @@ namespace min_kv {
         std::basic_string<char> read_buffer;
         bool closing = false;
 
-        std::unique_ptr<user> session_user;
+        std::optional<user> session_user;
     };
 } // min_kv
 
