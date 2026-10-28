@@ -29,6 +29,26 @@ cmake ..
 make
 ```
 
+### Running a Container
+Alternatively MinKV can be build and run as a Container.
+
+First build the image:
+```bash
+podman build -t MinKV .
+```
+
+MinKV requires a config and optionally sqlite3 database file. Put those into a directory and mount them as a Volume.
+Then start the container:
+```bash
+podman run -d --rm \
+       -p 5555:5555 \
+       -v "./minkv-config:/config:Z" \
+       --name minkv-server \
+       MinKV \
+       /app/MinKV /config/config.cfg
+```
+
+
 ## Configuration and Starting the Server
 By default, MinKV loads its configuration from a file named ``config.cfg`` in the working directory.
 
