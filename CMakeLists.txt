@@ -28,7 +28,7 @@ add_executable(MinKV src/main.cpp
         src/crypto.cpp
         src/crypto.h)
 
-target_link_libraries(MinKV ssl crypto TBB::tbb SQLite::SQLite3)
+target_link_libraries(MinKV ssl crypto TBB::tbb SQLite3::SQLite3)
 
 add_custom_command(
         TARGET MinKV
