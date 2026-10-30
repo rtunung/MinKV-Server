@@ -1,5 +1,6 @@
 
 #include "ssl_session.h"
+#include "session.h"
 
 #include <iostream>
 #include <asio.hpp>
@@ -19,7 +20,7 @@ namespace min_kv {
     }
 
     void ssl_session::read() {
-        asio::async_read_until(*ssl_stream,asio::dynamic_buffer(read_buffer) ,"\r\n",read_function);
+        asio::async_read_until(*ssl_stream,asio::dynamic_buffer(read_buffer, MAXIMUM_MESSAGE_SIZE) ,"\r\n",read_function);
     }
 
     void ssl_session::write(const std::string &str) {

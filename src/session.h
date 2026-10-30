@@ -10,6 +10,10 @@
 #include "user_db_connection.h"
 
 namespace min_kv {
+
+    // Message limit for now is 10 MB
+    constexpr std::size_t MAXIMUM_MESSAGE_SIZE = 1024 * 1024 * 10;
+
     class session;
     typedef std::function<std::string(const std::string&, session &s)> handler_function;
 

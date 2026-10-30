@@ -40,7 +40,7 @@ namespace min_kv {
     }
 
     void session::read() {
-        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer) ,"\r\n",read_function);
+        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer, MAXIMUM_MESSAGE_SIZE) ,"\r\n",read_function);
     }
 
     void session::write(const std::string &str) {
@@ -57,6 +57,8 @@ namespace min_kv {
                 self->read_buffer.clear();
             } else if (ec == asio::error::eof) {
                 std::cout << "INFO: A connection has been closed." << std::endl;
+            } else if (ec == asio::error::not_found) {
+                std::cout << "WARNING: Message exceeded memory limit." << std::endl;
             }
             else {
                 std::cerr << "ERROR: An error has occurred while reading on socket: " << ec.message() << std::endl;
