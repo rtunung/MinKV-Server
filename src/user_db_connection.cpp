@@ -1,6 +1,5 @@
 #include "user_db_connection.h"
 
-#include <cstring>
 #include <format>
 
 #include <openssl/crypto.h>

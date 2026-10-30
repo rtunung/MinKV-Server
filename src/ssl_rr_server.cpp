@@ -2,6 +2,7 @@
 #include "ssl_rr_server.h"
 
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "ssl_session.h"
 
@@ -23,12 +24,13 @@ namespace min_kv {
     void ssl_rr_server::accept() {
         acceptor.async_accept(
             [this](std::error_code ec, asio::ip::tcp::socket socket) {
+                const auto address = socket.remote_endpoint().address().to_string();
                 if (!ec) {
-                    std::cout << "INFO: Opening a new TLS session." << std::endl;
+                    spdlog::info("Opening new TLS session with client {}", address);
                     std::make_shared<ssl_session>(std::move(socket), ssl_ctx, this->handler)->start();
                 }
                 else
-                    std::cerr << "ERROR: could not open session: " << ec.message() << std::endl;
+                    spdlog::error("Could not open TLS session with client {}. {}", address, ec.message());
 
                 accept();
             });

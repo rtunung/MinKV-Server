@@ -38,6 +38,8 @@ namespace min_kv {
         void build_read_write();
         virtual void internal_close();
 
+        std::string address;
+
         std::function<void(std::error_code, size_t)> read_function;
         std::function<void(std::error_code, size_t)> write_function;
 

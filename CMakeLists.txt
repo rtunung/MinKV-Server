@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 find_package(OpenSSL REQUIRED CONFIG)
 find_package(TBB REQUIRED CONFIG)
 find_package(SQLite3)
+find_package(spdlog REQUIRED)
 
 add_executable(MinKV src/main.cpp
         src/rr_server.cpp
@@ -26,9 +27,11 @@ add_executable(MinKV src/main.cpp
         src/user_db_connection.cpp
         src/user_db_connection.h
         src/crypto.cpp
-        src/crypto.h)
+        src/crypto.h
+        src/Logger.cpp
+        src/Logger.h)
 
-target_link_libraries(MinKV ssl crypto TBB::tbb SQLite3::SQLite3)
+target_link_libraries(MinKV ssl crypto TBB::tbb SQLite3::SQLite3 spdlog::spdlog_header_only)
 
 add_custom_command(
         TARGET MinKV

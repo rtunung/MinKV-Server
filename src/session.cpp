@@ -5,9 +5,12 @@
 #include <asio/write.hpp>
 #include <asio.hpp>
 #include <utility>
+#include <spdlog/spdlog.h>
 
 namespace min_kv {
-    session::session(asio::ip::tcp::socket socket, handler_function h) : session_socket(std::move(socket)), handler(std::move(h)){
+    session::session(asio::ip::tcp::socket socket, handler_function h) :
+    session_socket(std::move(socket)), handler(std::move(h)){
+        this->address = session_socket.remote_endpoint().address().to_string();
     }
 
     void session::start() {
@@ -56,25 +59,25 @@ namespace min_kv {
                 write(reply);
                 self->read_buffer.clear();
             } else if (ec == asio::error::eof) {
-                std::cout << "INFO: A connection has been closed." << std::endl;
+                spdlog::info("Connection to client {} has been closed", address);
             } else if (ec == asio::error::not_found) {
-                std::cout << "WARNING: Message exceeded memory limit." << std::endl;
+                spdlog::warn("Message from {} exceeded memory limit. Shutting down connection", address);
             }
             else {
-                std::cerr << "ERROR: An error has occurred while reading on socket: " << ec.message() << std::endl;
+                spdlog::error("Could not read from socket connection to client {}. {}", address, ec.message());
             }
         };
 
         this->write_function = [this, self] (std::error_code ec, std::size_t size) {
             if (closing) {
                 internal_close();
-                std::cout << "INFO: A connection has been closed." << std::endl;
+                spdlog::info("Closing connection to client {}", address);
                 return;
             }
             if (!ec) {
                 read();
             } else {
-                std::cerr << "ERROR: An error has occurred while writing data to the socket: " << ec.message() << std::endl;
+                spdlog::error("Could not write to socket connecting to client {}. {}", address, ec.message());
             }
         };
     }

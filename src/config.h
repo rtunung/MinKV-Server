@@ -10,7 +10,7 @@ namespace min_kv {
     public:
         explicit config(const std::string &file_name);
 
-        std::string getStringValue(const std::string &key);
+        std::optional<std::string> getStringValue(const std::string &key);
         std::optional<bool> getBoolValue(const std::string &key);
         std::optional<int> getIntValue(const std::string &key);
         std::optional<float> getFloatValue(const std::string &key);

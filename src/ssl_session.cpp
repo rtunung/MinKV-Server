@@ -2,9 +2,9 @@
 #include "ssl_session.h"
 #include "session.h"
 
-#include <iostream>
 #include <asio.hpp>
 #include <utility>
+#include <spdlog/spdlog.h>
 
 
 namespace min_kv {
@@ -37,8 +37,9 @@ namespace min_kv {
             [this, self](asio::error_code ec) {
                 if (!ec)
                     read();
-                else
-                    std::cerr << "ERROR: Handshake failed: " << ec.message() << std::endl;
+                else {
+                    spdlog::error("Handshake with client {} failed: {}", address, ec.message());
+                }
             });
     }
 } // min_kv

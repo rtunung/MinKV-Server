@@ -1,8 +1,9 @@
 #include "rr_server.h"
 
-#include <iostream>
 #include <asio.hpp>
 #include <utility>
+
+#include <spdlog/spdlog.h>
 
 #include "ssl_session.h"
 
@@ -15,12 +16,13 @@ namespace min_kv {
     void rr_server::accept() {
         acceptor.async_accept(
             [this](std::error_code ec, asio::ip::tcp::socket socket) {
+                const auto address = socket.remote_endpoint().address().to_string();
                 if (!ec) {
-                    std::cout << "INFO: Opening a new TCP session." << std::endl;
+                    spdlog::info("Opening new TCP session with address {}", address);
                     std::make_shared<session>(std::move(socket), this->handler)->start();
                 }
                 else
-                    std::cerr << "ERROR: could not open session: " << ec.message() << std::endl;
+                    spdlog::error("Could not open session with address {}", address);
 
                 accept();
             });

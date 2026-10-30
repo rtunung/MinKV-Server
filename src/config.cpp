@@ -7,7 +7,7 @@ namespace min_kv {
         std::ifstream file;
         file.open(file_name);
         if (!file.is_open()) {
-            throw std::runtime_error("Can't open config file");
+            throw std::runtime_error("Could not open config file");
         }
 
         while (!file.eof()) {
@@ -28,7 +28,9 @@ namespace min_kv {
         file.close();
     }
 
-    std::string config::getStringValue(const std::string &key){
+    std::optional<std::string> config::getStringValue(const std::string &key){
+        if (!config_pairs.contains(key))
+            return {};
         return config_pairs[key];
     }
 

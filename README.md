@@ -34,17 +34,18 @@ Alternatively MinKV can be build and run as a Container.
 
 First build the image:
 ```bash
-podman build -t MinKV .
+podman build -t minkv .
 ```
 
 MinKV requires a config and optionally sqlite3 database file. Put those into a directory and mount them as a Volume.
+Make sure the config.cfg file is set to point at the log and certification files inside the mounted container.
 Then start the container:
 ```bash
 podman run -d --rm \
        -p 5555:5555 \
        -v "./minkv-config:/config:Z" \
        --name minkv-server \
-       MinKV \
+       minkv \
        /app/MinKV /config/config.cfg
 ```
 

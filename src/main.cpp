@@ -1,11 +1,14 @@
 #include <iostream>
 #include <termios.h>
 
+#include <spdlog/spdlog.h>
+#include "Logger.h"
+
 #define ASIO_STANDALONE
 #include "min_kv_server.h"
 #include "config.h"
 
-int add_user(min_kv::user_db_connection &db, const std::string &name) {
+static int add_user(min_kv::user_db_connection &db, const std::string &name) {
     int error_code = 0;
     termios old_termios, new_termios;
     tcgetattr(STDIN_FILENO, &old_termios);
@@ -35,9 +38,9 @@ int add_user(min_kv::user_db_connection &db, const std::string &name) {
         } catch (std::exception &e) {
             std::cout << "ERROR: " << e.what() << std::endl;
         }
-        std::cout << "INFO: Successfully created user." << std::endl;
+        std::cout << "Successfully created user." << std::endl;
     } else {
-        std::cout << "ERROR: Passwords do not match" << std::endl;
+        std::cout << "Passwords do not match" << std::endl;
         error_code = -1;
     }
 
@@ -47,7 +50,10 @@ int add_user(min_kv::user_db_connection &db, const std::string &name) {
     return error_code;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
+
+    // Setup Logger
+    min_kv::Logger::init();
 
     auto print_usage = [argv]() -> int {
         std::cout << "Usage:\n";
@@ -76,12 +82,19 @@ int main(int argc, char *argv[]) {
 
     try {
         min_kv::config cfg(config_file);
+
+        const auto log_file_path = cfg.getStringValue("log_file");
+        if ( log_file_path && !log_file_path.value().empty())
+            min_kv::Logger::add_file_sink(log_file_path.value());
+
         min_kv::min_kv_server server(cfg);
-        std::cout << "INFO: Starting MinKV Server" << std::endl;
+        spdlog::info("Starting MinKV Server");
         server.run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        spdlog::critical("An unrecoverable error occurred: {}", e.what());
     }
+
+    spdlog::shutdown();
 
     return 0;
 }

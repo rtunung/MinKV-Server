@@ -1,6 +1,7 @@
 #include "min_kv_server.h"
 
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "ssl_rr_server.h"
 #include "parser.h"
@@ -40,15 +41,19 @@ namespace min_kv {
         this->authentication_required = authentication_required_result.value();
         if (authentication_required) {
             auto db_location = conf.getStringValue("user_database");
-            if (db_location.empty())
+            if (!db_location || db_location.value().empty())
                 throw std::runtime_error("user_database not set");
-            this->user_db = std::make_unique<user_db_connection>(db_location);
+            this->user_db = std::make_unique<user_db_connection>(db_location.value());
         }
 
         if (tls_mode) {
-            std::string key_file = conf.getStringValue("key_file");
-            std::string cert_file = conf.getStringValue("cert_file");
-            server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
+            auto key_file = conf.getStringValue("key_file");
+            auto cert_file = conf.getStringValue("cert_file");
+            if (!key_file || key_file.value().empty())
+                throw std::runtime_error("key_file not set");
+            if (!cert_file || cert_file.value().empty())
+                throw std::runtime_error("cert_file not set");
+            server = std::make_unique<ssl_rr_server>(io, port, cert_file.value(), key_file.value(), build_handler());
         } else {
             server = std::make_unique<rr_server>(io, port, build_handler());
         }
@@ -65,7 +70,7 @@ namespace min_kv {
 
         asio::signal_set signals(io, SIGINT, SIGTERM);
         signals.async_wait([this](auto err, int i) {
-            std::cout << "INFO: Closing Server\n";
+            spdlog::info("Closing MinKV server");
             this->io.stop();
         });
         thread_pool.join();
@@ -81,7 +86,7 @@ namespace min_kv {
             } catch (const parser_error &p_error) {
                 reply_stream << "ERROR \"" << p_error.what() << "\"";
             } catch (const std::exception &error) {
-                std::cerr << "Error during parsing: " << error.what() << std::endl;
+                spdlog::error("Message could not be parsed: {}", error.what());
                 reply_stream << "ERROR \"Message could not be parsed.\"";
             }
 
@@ -120,6 +125,8 @@ namespace min_kv {
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
+                    break;
+                case command_type::FAILED_PARSE:
                     break;
                 case command_type::LOGIN:
                     if (!authentication_required) {
