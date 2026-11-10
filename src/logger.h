@@ -8,6 +8,7 @@ namespace min_kv {
     public:
         static void init();
         static void add_file_sink(const std::string &file_path);
+        static void set_debug();
 
     };
 } // min_kv

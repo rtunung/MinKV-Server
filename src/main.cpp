@@ -83,6 +83,9 @@ int main(const int argc, char *argv[]) {
     try {
         min_kv::config cfg(config_file);
 
+        if (cfg.getBoolValue("log_debug"))
+            min_kv::logger::set_debug();
+
         const auto log_file_path = cfg.getStringValue("log_file");
         if ( log_file_path && !log_file_path.value().empty())
             min_kv::logger::add_file_sink(log_file_path.value());

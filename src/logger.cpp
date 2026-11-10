@@ -23,7 +23,7 @@ namespace min_kv {
             spdlog::async_overflow_policy::block
         );
 
-        logger_->set_level(spdlog::level::debug);
+        logger_->set_level(spdlog::level::info);
 
         spdlog::register_logger(logger_);
         spdlog::set_default_logger(logger_);
@@ -35,5 +35,10 @@ namespace min_kv {
             10 * 1024 * 1024,
             5);
         logger_->sinks().emplace_back(rotating_file_sink);
+    }
+
+    void logger::set_debug() {
+        logger_->set_level(spdlog::level::debug);
+        spdlog::debug("Debug Logging enabled");
     }
 } // min_kv
