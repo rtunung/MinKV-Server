@@ -2,7 +2,7 @@
 #include <termios.h>
 
 #include <spdlog/spdlog.h>
-#include "Logger.h"
+#include "logger.h"
 
 #define ASIO_STANDALONE
 #include "min_kv_server.h"
@@ -53,7 +53,7 @@ static int add_user(min_kv::user_db_connection &db, const std::string &name) {
 int main(const int argc, char *argv[]) {
 
     // Setup Logger
-    min_kv::Logger::init();
+    min_kv::logger::init();
 
     auto print_usage = [argv]() -> int {
         std::cout << "Usage:\n";
@@ -85,7 +85,7 @@ int main(const int argc, char *argv[]) {
 
         const auto log_file_path = cfg.getStringValue("log_file");
         if ( log_file_path && !log_file_path.value().empty())
-            min_kv::Logger::add_file_sink(log_file_path.value());
+            min_kv::logger::add_file_sink(log_file_path.value());
 
         min_kv::min_kv_server server(cfg);
         spdlog::info("Starting MinKV Server");

@@ -28,8 +28,8 @@ add_executable(MinKV src/main.cpp
         src/user_db_connection.h
         src/crypto.cpp
         src/crypto.h
-        src/Logger.cpp
-        src/Logger.h)
+        src/logger.cpp
+        src/logger.h)
 
 target_link_libraries(MinKV ssl crypto TBB::tbb SQLite3::SQLite3 spdlog::spdlog_header_only)
 

@@ -4,7 +4,7 @@
 #include <spdlog/async.h>
 
 namespace min_kv {
-    class Logger {
+    class logger {
     public:
         static void init();
         static void add_file_sink(const std::string &file_path);
