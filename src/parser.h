@@ -15,6 +15,7 @@ namespace min_kv {
         key_identifier,
         command_identifier,
         string_literal,
+        integer,
     };
 
     struct token {
@@ -27,6 +28,7 @@ namespace min_kv {
     // -----------------------
     enum class command_type {
         SET,
+        SET_E,
         GET,
         CLOSE,
         DELETE,
@@ -66,12 +68,14 @@ namespace min_kv {
 
         void skip_whitespace();
         bool is_identifier_start() const;
+        bool is_integer_start() const;
         bool is_string_literal_start() const;
         static bool is_command_identifier(std::string_view token_string);
 
         // Lex Tokens
         void tokenize_identifier();
         void tokenize_string();
+        void tokenize_integer();
 
         // Member Variables
         std::string_view src;

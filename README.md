@@ -17,6 +17,7 @@ The project depends on the following dependencies:
 - **OpenSSL**
 - **sqlite3**
 - **oneTBB**
+- **spdlog**
 
 Make sure all the developer files are installed on your system.
 
@@ -81,13 +82,14 @@ For more advanced database administration, you can use the ``sqlite3`` CLI or an
 ### Command Format
 Commands are sent to via tcp or tls to the server. Every command must be terminated with: ```\r\n ```
 
-Commands can consist of the following three elements:
+Commands can consist of the following four elements:
 - The command identifier ``<cmd>``. (e.g ``GET``)
 - Key identifiers ``<key>``: (e.g. ``key1``)
   - Key consist of alphanumerical characters or under scores
   - Keys mustn't contain spaces
 - String literals ``<string>``: (e.g ``"This is a message\n"``)
   - Escape characters are supported
+- Integers ``<int>``: (e.g. ``123``)
 
 ### Reply Format
 All server replies are also terminated with ```\r\n```.
@@ -103,8 +105,9 @@ ERROR "Error message as string literal"
 - ``GET <key>`` Returns the value associated with the key.
   If the key does not exist, an empty string (``""``) is returned.
 - ``SET <key> <string>`` Sets the value of the key to the given string.
+- ``SET_E <key> <string> <int>`` Same as SET, but the entry expires in the given amount of milliseconds. 
 - ``DELETE <key>`` Deletes the value stored at the specified key.
-- ``APPEND <key> <string>`` Appends the given string to the existing value.
+- ``APPEND <key> <string>`` Appends the given string to the existing value. If the key does not exist it will be created. Does not alter the expiration on the key.
 - ``LOGIN <key> <string>`` Special command used for authentication.
   The key is interpreted as the username, and the string literal contains the password.
 - ``CLOSE`` Requests for the server to close the connection
@@ -132,10 +135,3 @@ OK
 ```
 
 The ``\r\n`` at the end of each line are omitted for readability.
-
-## TODO
-The project is mostly feature complete, but there is still some work to be done:
- - [ ] Add a few more useful commands
- - [ ] Think of a better name (the hardest task)
- - [ ] More extensive testing
- - [ ] Added improved documentation

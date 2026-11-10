@@ -32,7 +32,7 @@ namespace min_kv {
         asio::io_context io;
         handler_function handler;
 
-        int num_threads;
+        int num_asio_threads;
 
         bool authentication_required;
         std::unique_ptr<user_db_connection> user_db;

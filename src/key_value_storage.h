@@ -2,24 +2,51 @@
 #ifndef MINKV_KEY_VALUE_STORAGE_H
 #define MINKV_KEY_VALUE_STORAGE_H
 
+#include <queue>
 #include <tbb/concurrent_hash_map.h>
 
 namespace min_kv {
-    using kv_map = tbb::concurrent_hash_map<std::string, std::string>;
+    using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+
+    struct entry {
+        std::string value;
+        unsigned int generation;
+    };
+
+    struct expiration {
+        std::string key;
+        unsigned int generation;
+        time_point expires_at;
+    };
+
+    class expiration_compare {
+    public:
+        bool operator() (const expiration& lhs, const expiration& rhs) const {
+            return lhs.expires_at > rhs.expires_at;
+        }
+    };
+
+    using kv_map = tbb::concurrent_hash_map<std::string, entry>;
 
     class key_value_storage {
     public:
         key_value_storage();
 
-        void insert_key_value(const std::string& key, std::string value);
+        unsigned int insert_key_value(const std::string& key, std::string value);
+        void insert_key_value_expiration(const std::string& key, std::string value, int milliseconds);
         std::string get_value(const std::string& key) const;
         void delete_key_value(const std::string& key);
         void append_key_value(const std::string& key, const std::string &append);
+
+        void purge_expired_entries();
+        void stop_purge_expired_entries();
 
     private:
         void create_if_empty(kv_map::accessor& acc, const std::string& key);
 
         kv_map kv_store;
+        std::priority_queue<expiration, std::vector<expiration>, expiration_compare> expiration_queue;
+        bool purge_entries;
     };
 } // min_kv
 

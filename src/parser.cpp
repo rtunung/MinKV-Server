@@ -14,6 +14,8 @@ namespace min_kv {
                 tokenize_identifier();
             else if (is_string_literal_start())
                 tokenize_string();
+            else if (is_integer_start())
+                tokenize_integer();
             else {
                 std::stringstream es;
                 es << "unexpected character: '" << peek() << "'";
@@ -40,12 +42,16 @@ namespace min_kv {
         return std::isalpha(peek()) || peek() == '_';
     }
 
+    bool tokenizer::is_integer_start() const {
+        return std::isdigit(peek());
+    }
+
     bool tokenizer::is_string_literal_start() const {
         return peek() == '\"';
     }
 
     bool tokenizer::is_command_identifier(std::string_view token_string) {
-        static const std::string commands[] = {"GET", "SET", "CLOSE", "DELETE", "APPEND", "LOGIN"};
+        static const std::string commands[] = {"GET", "SET", "SET_E", "CLOSE", "DELETE", "APPEND", "LOGIN"};
         return std::ranges::any_of(commands, [&token_string](const auto& token)-> bool {
            return token_string == token;
         });
@@ -114,6 +120,17 @@ namespace min_kv {
         tokens.push_back(t);
     }
 
+    void tokenizer::tokenize_integer() {
+        token t;
+
+        while (!eof() && std::isdigit(peek())) {
+            t.value.push_back(peek());
+            advance();
+        }
+        t.type = token_type::integer;
+        tokens.push_back(t);
+    }
+
     command parse_command(const std::vector<token> &tokens) {
         command cmd;
 
@@ -131,6 +148,19 @@ namespace min_kv {
             cmd.type = command_type::SET;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
+        } else if (tokens[0].value == "SET_E") {
+            if (tokens.size() < 4)
+                throw parser_error("The SET_E command requires 3 arguments");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the first argument for SET_E");
+            if (tokens[2].type != token_type::string_literal)
+                throw parser_error("Expected a string literal as the second argument");
+            if (tokens[3].type != token_type::integer)
+                throw parser_error("Expected a integer as the third argument");
+            cmd.type = command_type::SET_E;
+            cmd.args.push_back(tokens[1].value);
+            cmd.args.push_back(tokens[2].value);
+            cmd.args.push_back(tokens[3].value);
         } else if (tokens[0].value == "GET") {
             if (tokens.size() < 2)
                 throw parser_error("The GET command requires 1 argument");

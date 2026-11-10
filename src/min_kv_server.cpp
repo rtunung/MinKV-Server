@@ -9,12 +9,12 @@
 namespace min_kv {
     min_kv_server::min_kv_server(unsigned int port) : io(asio::io_context()) {
         authentication_required = false;
-        num_threads = 1;
+        num_asio_threads = 1;
         server = std::make_unique<rr_server>(io, port, build_handler());
     }
 
     min_kv_server::min_kv_server(unsigned int port, const std::string &cert_file, const std::string &key_file) {
-        num_threads = 1;
+        num_asio_threads = 1;
         authentication_required = false;
         server = std::make_unique<ssl_rr_server>(io, port, cert_file, key_file, build_handler());
     }
@@ -33,7 +33,7 @@ namespace min_kv {
         auto num_threads_result = conf.getIntValue("num_threads");
         if (!num_threads_result)
             throw std::runtime_error("num_threads not set");
-        this->num_threads = num_threads_result.value();
+        this->num_asio_threads = num_threads_result.value();
 
         auto authentication_required_result = conf.getBoolValue("authentication_required");
         if (!authentication_required_result)
@@ -61,17 +61,25 @@ namespace min_kv {
 
     void min_kv_server::run() {
         server->accept();
-        asio::thread_pool thread_pool(num_threads);
-        for (std::size_t i = 0; i < num_threads; i++) {
+        // +1 for key-value storage clean up
+        const auto total_threads = num_asio_threads  + 1;
+
+        asio::thread_pool thread_pool(total_threads);
+        for (std::size_t i = 0; i < num_asio_threads; i++) {
             asio::post(thread_pool, [this]() {
                 this->io.run();
             });
         }
 
+        asio::post(thread_pool, [this]() {
+            this->kv_storage.purge_expired_entries();
+        });
+
         asio::signal_set signals(io, SIGINT, SIGTERM);
         signals.async_wait([this](auto err, int i) {
             spdlog::info("Closing MinKV server");
             this->io.stop();
+            this->kv_storage.stop_purge_expired_entries();
         });
         thread_pool.join();
     }
@@ -98,6 +106,14 @@ namespace min_kv {
                 case command_type::SET:
                     if (!authentication_required || authentication_required && s.write_permission()) {
                         kv_storage.insert_key_value(cmd.args[0], cmd.args[1]);
+                        reply_stream << "OK";
+                    } else
+                        reply_stream << permission_error;
+                    break;
+                case command_type::SET_E:
+                    if (!authentication_required || authentication_required && s.write_permission()) {
+                        kv_storage.insert_key_value_expiration(cmd.args[0], cmd.args[1],
+                                                               std::atoi(cmd.args[2].c_str()));
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
