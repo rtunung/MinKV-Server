@@ -102,53 +102,52 @@ namespace min_kv {
             if (s.is_authenticated())
                 permission_error = "ERROR \"Permission denied.\"";
 
+            const auto authentication_check = [this, &reply_stream, &permission_error](const bool permission) {
+                const bool allowed = !this->authentication_required || authentication_required && permission;
+                if (!allowed)
+                    reply_stream << permission_error;
+                return allowed;
+            };
+
             switch (cmd.type) {
                 case command_type::SET:
-                    if (!authentication_required || authentication_required && s.write_permission()) {
+                    if (authentication_check(s.write_permission())) {
                         kv_storage.insert_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
-                    } else
-                        reply_stream << permission_error;
+                    }
                     break;
                 case command_type::SET_EX:
-                    if (!authentication_required || authentication_required && s.write_permission()) {
+                    if (authentication_check(s.write_permission())) {
                         kv_storage.insert_key_value_expiration(cmd.args[0], cmd.args[1],
                                                                std::atoi(cmd.args[2].c_str()));
                         reply_stream << "OK";
-                    } else
-                        reply_stream << permission_error;
+                    }
                     break;
                 case command_type::GET:
-                    if (!authentication_required || authentication_required && s.read_permission())
+                    if (authentication_check(s.read_permission()))
                         reply_stream << "RESULT \"" << kv_storage.get_value(cmd.args[0]) << "\"";
-                    else
-                        reply_stream << permission_error;
                     break;
                 case command_type::CLOSE:
                     s.close();
                     reply_stream << "OK";
                     break;
                 case command_type::DELETE:
-                    if (!authentication_required || authentication_required && s.write_permission()) {
+                    if (authentication_check(s.write_permission())) {
                         kv_storage.delete_key_value(cmd.args[0]);
                         reply_stream << "OK";
-                    } else
-                        reply_stream << permission_error;
+                    }
                     break;
                 case command_type::APPEND:
-                    if (!authentication_required || authentication_required && s.write_permission()) {
+                    if (authentication_check(s.write_permission())) {
                         kv_storage.append_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
-                    } else
-                        reply_stream << permission_error;
+                    }
                     break;
                 case command_type::APPEND_EX:
-                    if (!authentication_required || authentication_required && s.write_permission()) {
+                    if (authentication_check(s.write_permission())) {
                         kv_storage.append_key_value_expiration(cmd.args[0], cmd.args[1], std::atoi(cmd.args[2].c_str()));
                         reply_stream << "OK";
-                    } else
-                        reply_stream << permission_error;
-                    break;
+                    }
                     break;
                 case command_type::FAILED_PARSE:
                     break;
