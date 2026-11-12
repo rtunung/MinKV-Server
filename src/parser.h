@@ -28,11 +28,12 @@ namespace min_kv {
     // -----------------------
     enum class command_type {
         SET,
-        SET_E,
+        SET_EX,
         GET,
         CLOSE,
         DELETE,
         APPEND,
+        APPEND_EX,
         LOGIN,
         FAILED_PARSE,
     };

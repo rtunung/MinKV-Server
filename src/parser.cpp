@@ -51,7 +51,7 @@ namespace min_kv {
     }
 
     bool tokenizer::is_command_identifier(std::string_view token_string) {
-        static const std::string commands[] = {"GET", "SET", "SET_E", "CLOSE", "DELETE", "APPEND", "LOGIN"};
+        static constexpr std::string commands[] = {"GET", "SET", "SET_EX", "CLOSE", "DELETE", "APPEND", "APPEND_EX","LOGIN"};
         return std::ranges::any_of(commands, [&token_string](const auto& token)-> bool {
            return token_string == token;
         });
@@ -148,7 +148,7 @@ namespace min_kv {
             cmd.type = command_type::SET;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
-        } else if (tokens[0].value == "SET_E") {
+        } else if (tokens[0].value == "SET_EX") {
             if (tokens.size() < 4)
                 throw parser_error("The SET_E command requires 3 arguments");
             if (tokens[1].type != token_type::key_identifier)
@@ -157,7 +157,7 @@ namespace min_kv {
                 throw parser_error("Expected a string literal as the second argument");
             if (tokens[3].type != token_type::integer)
                 throw parser_error("Expected a integer as the third argument");
-            cmd.type = command_type::SET_E;
+            cmd.type = command_type::SET_EX;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
             cmd.args.push_back(tokens[3].value);
@@ -187,6 +187,19 @@ namespace min_kv {
             cmd.type = command_type::APPEND;
             cmd.args.push_back(tokens[1].value);
             cmd.args.push_back(tokens[2].value);
+        } else if (tokens[0].value == "APPEND_EX") {
+            if (tokens.size() < 4)
+                throw parser_error("The APPEND_EX command requires 3 arguments");
+            if (tokens[1].type != token_type::key_identifier)
+                throw parser_error("Expected a key identifier as the first argument for APPEND_EX");
+            if (tokens[2].type != token_type::string_literal)
+                throw parser_error("Expected a string literal as the second argument for APPEND_EX");
+            if (tokens[3].type != token_type::integer)
+                throw parser_error("Expected a integer as the third argument for APPEND_EX");
+            cmd.type = command_type::APPEND_EX;
+            cmd.args.push_back(tokens[1].value);
+            cmd.args.push_back(tokens[2].value);
+            cmd.args.push_back(tokens[3].value);
         } else if (tokens[0].value == "LOGIN") {
             if (tokens.size() < 3)
                 throw parser_error("The LOGIN command requires 2 arguments");

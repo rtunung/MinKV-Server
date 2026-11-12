@@ -10,12 +10,12 @@ namespace min_kv {
 
     struct entry {
         std::string value;
-        unsigned int generation;
+        std::uint64_t generation;
     };
 
     struct expiration {
         std::string key;
-        unsigned int generation;
+        std::uint64_t generation;
         time_point expires_at;
     };
 
@@ -32,11 +32,12 @@ namespace min_kv {
     public:
         key_value_storage();
 
-        unsigned int insert_key_value(const std::string& key, std::string value);
+        std::uint64_t insert_key_value(const std::string& key, std::string value);
         void insert_key_value_expiration(const std::string& key, std::string value, int milliseconds);
         std::string get_value(const std::string& key) const;
         void delete_key_value(const std::string& key);
         void append_key_value(const std::string& key, const std::string &append);
+        void append_key_value_expiration(const std::string& key, const std::string &append, int milliseconds);
 
         void purge_expired_entries();
         void stop_purge_expired_entries();
@@ -46,7 +47,9 @@ namespace min_kv {
 
         kv_map kv_store;
         std::priority_queue<expiration, std::vector<expiration>, expiration_compare> expiration_queue;
-        bool purge_entries;
+        std::atomic_uint64_t generation_counter = 0;
+        std::mutex expiration_queue_mutex;
+        bool purge_entries{};
     };
 } // min_kv
 

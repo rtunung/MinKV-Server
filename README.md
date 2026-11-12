@@ -105,9 +105,10 @@ ERROR "Error message as string literal"
 - ``GET <key>`` Returns the value associated with the key.
   If the key does not exist, an empty string (``""``) is returned.
 - ``SET <key> <string>`` Sets the value of the key to the given string.
-- ``SET_E <key> <string> <int>`` Same as SET, but the entry expires in the given amount of milliseconds. 
+- ``SET_EX <key> <string> <int>`` Same as SET, but the entry expires in the given amount of milliseconds. 
 - ``DELETE <key>`` Deletes the value stored at the specified key.
-- ``APPEND <key> <string>`` Appends the given string to the existing value. If the key does not exist it will be created. Does not alter the expiration on the key.
+- ``APPEND <key> <string>`` Appends the given string to the existing value. If the key does not exist it will be created. Does not alter the expiration of the key.
+- ``APPEND <key> <string> <int>`` Same as APPEND, but the entries expiration timer is updated by the given integer argument.
 - ``LOGIN <key> <string>`` Special command used for authentication.
   The key is interpreted as the username, and the string literal contains the password.
 - ``CLOSE`` Requests for the server to close the connection

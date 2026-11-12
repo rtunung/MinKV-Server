@@ -110,7 +110,7 @@ namespace min_kv {
                     } else
                         reply_stream << permission_error;
                     break;
-                case command_type::SET_E:
+                case command_type::SET_EX:
                     if (!authentication_required || authentication_required && s.write_permission()) {
                         kv_storage.insert_key_value_expiration(cmd.args[0], cmd.args[1],
                                                                std::atoi(cmd.args[2].c_str()));
@@ -141,6 +141,14 @@ namespace min_kv {
                         reply_stream << "OK";
                     } else
                         reply_stream << permission_error;
+                    break;
+                case command_type::APPEND_EX:
+                    if (!authentication_required || authentication_required && s.write_permission()) {
+                        kv_storage.append_key_value_expiration(cmd.args[0], cmd.args[1], std::atoi(cmd.args[2].c_str()));
+                        reply_stream << "OK";
+                    } else
+                        reply_stream << permission_error;
+                    break;
                     break;
                 case command_type::FAILED_PARSE:
                     break;
