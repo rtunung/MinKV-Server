@@ -4,6 +4,8 @@
 
 namespace min_kv {
     config::config(const std::string &file_name) {
+        this->file_name = file_name;
+
         std::ifstream file;
         file.open(file_name);
         if (!file.is_open()) {
@@ -62,6 +64,10 @@ namespace min_kv {
         } catch (const std::exception &e) {
             return {};
         }
+    }
+
+    std::string config::getFileName() {
+        return file_name;
     }
 
     std::string trim_string(const std::string &input) {

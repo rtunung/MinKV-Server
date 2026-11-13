@@ -15,8 +15,11 @@ namespace min_kv {
         std::optional<int> getIntValue(const std::string &key);
         std::optional<float> getFloatValue(const std::string &key);
 
+        std::string getFileName();
+
     private:
         std::unordered_map<std::string, std::string> config_pairs;
+        std::string file_name;
     };
 
     std::string trim_string(const std::string &input);

@@ -28,9 +28,11 @@ namespace min_kv {
 
     using kv_map = tbb::concurrent_hash_map<std::string, entry>;
 
+    constexpr std::uint64_t DEFAULT_PURGE_TIMER_MS = 25;
+
     class key_value_storage {
     public:
-        key_value_storage();
+        explicit key_value_storage(std::uint64_t purge_timer_ms);
 
         std::uint64_t insert_key_value(const std::string& key, std::string value);
         void insert_key_value_expiration(const std::string& key, std::string value, int milliseconds);
@@ -50,6 +52,8 @@ namespace min_kv {
         std::atomic_uint64_t generation_counter = 0;
         std::mutex expiration_queue_mutex;
         bool purge_entries{};
+
+        std::uint64_t purge_timer_ms;
     };
 } // min_kv
 

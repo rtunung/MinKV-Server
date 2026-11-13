@@ -12,8 +12,8 @@ namespace min_kv {
         spdlog::debug("session for {} destroyed", address);
     }
 
-    session::session(asio::ip::tcp::socket socket, handler_function h) :
-    session_socket(std::move(socket)), handler(std::move(h)){
+    session::session(asio::ip::tcp::socket socket, handler_function h, const std::size_t maximum_message_size) :
+    session_socket(std::move(socket)), handler(std::move(h)), maximum_message_size(maximum_message_size) {
         this->address = session_socket.remote_endpoint().address().to_string();
     }
 
@@ -47,7 +47,7 @@ namespace min_kv {
     }
 
     void session::read() {
-        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer, MAXIMUM_MESSAGE_SIZE) ,"\r\n",read_function);
+        asio::async_read_until(session_socket,asio::dynamic_buffer(read_buffer, maximum_message_size) ,"\r\n",read_function);
     }
 
     void session::write(const std::string &str) {

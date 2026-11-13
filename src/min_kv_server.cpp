@@ -46,6 +46,22 @@ namespace min_kv {
             this->user_db = std::make_unique<user_db_connection>(db_location.value());
         }
 
+        if (const auto max_message_size_result = conf.getIntValue("max_message_size"))
+            this->max_message_size = max_message_size_result.value();
+        else {
+            spdlog::warn("'max_message_size' not set in {}. Defaulting to {} bytes.", conf.getFileName(),
+                         DEFAULT_MAXIMUM_MESSAGE_SIZE);
+            this->max_message_size = DEFAULT_MAXIMUM_MESSAGE_SIZE;
+        }
+
+        if (const auto purge_timer_result = conf.getIntValue("ex_clean_up_timer"))
+            this->kv_storage = std::make_unique<key_value_storage>(purge_timer_result.value());
+        else {
+            spdlog::warn("'ex_clean_up_timer' is not set in {}. Defaulting to {} milliseconds.",
+                conf.getFileName(), DEFAULT_PURGE_TIMER_MS);
+            this->kv_storage = std::make_unique<key_value_storage>(DEFAULT_PURGE_TIMER_MS);
+        }
+
         if (tls_mode) {
             auto key_file = conf.getStringValue("key_file");
             auto cert_file = conf.getStringValue("cert_file");
@@ -60,7 +76,7 @@ namespace min_kv {
     }
 
     void min_kv_server::run() {
-        server->accept();
+        server->accept(max_message_size);
         // +1 for key-value storage clean up
         const auto total_threads = num_asio_threads  + 1;
 
@@ -72,14 +88,14 @@ namespace min_kv {
         }
 
         asio::post(thread_pool, [this]() {
-            this->kv_storage.purge_expired_entries();
+            this->kv_storage->purge_expired_entries();
         });
 
         asio::signal_set signals(io, SIGINT, SIGTERM);
         signals.async_wait([this](auto err, int i) {
             spdlog::info("Closing MinKV server");
             this->io.stop();
-            this->kv_storage.stop_purge_expired_entries();
+            this->kv_storage->stop_purge_expired_entries();
         });
         thread_pool.join();
     }
@@ -112,20 +128,20 @@ namespace min_kv {
             switch (cmd.type) {
                 case command_type::SET:
                     if (authentication_check(s.write_permission())) {
-                        kv_storage.insert_key_value(cmd.args[0], cmd.args[1]);
+                        kv_storage->insert_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
                     }
                     break;
                 case command_type::SET_EX:
                     if (authentication_check(s.write_permission())) {
-                        kv_storage.insert_key_value_expiration(cmd.args[0], cmd.args[1],
+                        kv_storage->insert_key_value_expiration(cmd.args[0], cmd.args[1],
                                                                std::atoi(cmd.args[2].c_str()));
                         reply_stream << "OK";
                     }
                     break;
                 case command_type::GET:
                     if (authentication_check(s.read_permission()))
-                        reply_stream << "RESULT \"" << kv_storage.get_value(cmd.args[0]) << "\"";
+                        reply_stream << "RESULT \"" << kv_storage->get_value(cmd.args[0]) << "\"";
                     break;
                 case command_type::CLOSE:
                     s.close();
@@ -133,19 +149,19 @@ namespace min_kv {
                     break;
                 case command_type::DELETE:
                     if (authentication_check(s.write_permission())) {
-                        kv_storage.delete_key_value(cmd.args[0]);
+                        kv_storage->delete_key_value(cmd.args[0]);
                         reply_stream << "OK";
                     }
                     break;
                 case command_type::APPEND:
                     if (authentication_check(s.write_permission())) {
-                        kv_storage.append_key_value(cmd.args[0], cmd.args[1]);
+                        kv_storage->append_key_value(cmd.args[0], cmd.args[1]);
                         reply_stream << "OK";
                     }
                     break;
                 case command_type::APPEND_EX:
                     if (authentication_check(s.write_permission())) {
-                        kv_storage.append_key_value_expiration(cmd.args[0], cmd.args[1], std::atoi(cmd.args[2].c_str()));
+                        kv_storage->append_key_value_expiration(cmd.args[0], cmd.args[1], std::atoi(cmd.args[2].c_str()));
                         reply_stream << "OK";
                     }
                     break;

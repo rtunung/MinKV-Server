@@ -8,9 +8,9 @@
 
 
 namespace min_kv {
-    ssl_session::ssl_session(asio::ip::tcp::socket socket, asio::ssl::context &ssl_ctx, handler_function h) :
-        session(std::move(socket), std::move(h))
-    {
+    ssl_session::ssl_session(asio::ip::tcp::socket socket, asio::ssl::context &ssl_ctx, handler_function h, const std::size_t maximum_message_size) :
+        session(std::move(socket), std::move(h), maximum_message_size) {
+
         this->ssl_stream = std::make_unique<asio::ssl::stream<asio::ip::tcp::socket> >(std::move(session_socket), ssl_ctx);
     }
 
@@ -20,7 +20,7 @@ namespace min_kv {
     }
 
     void ssl_session::read() {
-        asio::async_read_until(*ssl_stream,asio::dynamic_buffer(read_buffer, MAXIMUM_MESSAGE_SIZE) ,"\r\n",read_function);
+        asio::async_read_until(*ssl_stream,asio::dynamic_buffer(read_buffer, maximum_message_size) ,"\r\n",read_function);
     }
 
     void ssl_session::write(const std::string &str) {

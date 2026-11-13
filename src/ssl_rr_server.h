@@ -10,7 +10,7 @@ namespace min_kv {
             const std::string& cert_file,const std::string& key_file, handler_function h);
 
     protected:
-        void accept() override;
+        void accept(std::size_t max_message_size) override;
 
         asio::ssl::context ssl_ctx;
     };

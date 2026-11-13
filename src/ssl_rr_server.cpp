@@ -21,19 +21,19 @@ namespace min_kv {
         ssl_ctx.use_private_key_file(key_file, asio::ssl::context::pem);
     }
 
-    void ssl_rr_server::accept() {
+    void ssl_rr_server::accept(const std::size_t max_message_size) {
         acceptor.async_accept(
-            [this](std::error_code ec, asio::ip::tcp::socket socket) {
+            [this, max_message_size](std::error_code ec, asio::ip::tcp::socket socket) {
                 const auto address = socket.remote_endpoint().address().to_string();
                 if (!ec) {
                     spdlog::info("Opening new TLS session with client {}", address);
-                    auto new_session = new ssl_session(std::move(socket), ssl_ctx, this->handler);
+                    auto new_session = new ssl_session(std::move(socket), ssl_ctx, this->handler, max_message_size);
                     new_session->start();
                 }
                 else
                     spdlog::error("Could not open TLS session with client {}. {}", address, ec.message());
 
-                accept();
+                accept(max_message_size);
             });
     }
 } // min_kv

@@ -27,12 +27,14 @@ namespace min_kv {
     private:
         handler_function build_handler();
 
-        key_value_storage kv_storage;
+        std::unique_ptr<key_value_storage> kv_storage;
         std::unique_ptr<rr_server> server;
         asio::io_context io;
         handler_function handler;
 
         int num_asio_threads;
+
+        std::size_t max_message_size;
 
         bool authentication_required;
         std::unique_ptr<user_db_connection> user_db;

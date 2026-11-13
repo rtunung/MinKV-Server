@@ -16,7 +16,7 @@ namespace min_kv {
         rr_server(asio::io_context &context, unsigned short port,
             handler_function h);
 
-        virtual void accept();
+        virtual void accept(std::size_t max_message_size);
 
     protected:
         asio::ip::tcp::acceptor acceptor;

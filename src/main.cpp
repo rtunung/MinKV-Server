@@ -87,8 +87,16 @@ int main(const int argc, char *argv[]) {
             min_kv::logger::set_debug();
 
         const auto log_file_path = cfg.getStringValue("log_file");
-        if ( log_file_path && !log_file_path.value().empty())
-            min_kv::logger::add_file_sink(log_file_path.value());
+        const auto log_num_files = cfg.getIntValue("num_log_files");
+        const auto log_max_size = cfg.getIntValue("max_log_size");
+        if ( log_file_path && !log_file_path.value().empty()) {
+            if (log_num_files && log_max_size)
+                min_kv::logger::add_file_sink(log_file_path.value(), log_num_files.value(), log_max_size.value());
+            else
+                spdlog::warn("Missing 'num_log_files' or 'max_log_size' parameters in {}. Logging to stdout only", config_file);
+        } else {
+            spdlog::warn("No log files specified. Logging to stdout only");
+        }
 
         min_kv::min_kv_server server(cfg);
         spdlog::info("Starting MinKV Server");

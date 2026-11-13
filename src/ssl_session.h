@@ -7,7 +7,8 @@
 namespace min_kv {
     class ssl_session : public session {
     public:
-        ssl_session(asio::ip::tcp::socket socket, asio::ssl::context& ssl_ctx, handler_function h);
+        ssl_session(asio::ip::tcp::socket socket, asio::ssl::context& ssl_ctx, handler_function h,
+            std::size_t maximum_message_size = DEFAULT_MAXIMUM_MESSAGE_SIZE);
 
         void start() override;
 

@@ -29,11 +29,11 @@ namespace min_kv {
         spdlog::set_default_logger(logger_);
     }
 
-    void logger::add_file_sink(const std::string &file_path) {
+    void logger::add_file_sink(const std::string &file_path, int num_files, std::size_t max_size) {
         auto rotating_file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
             file_path,
-            10 * 1024 * 1024,
-            5);
+            max_size,
+            num_files);
         logger_->sinks().emplace_back(rotating_file_sink);
     }
 

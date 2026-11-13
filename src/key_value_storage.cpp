@@ -6,7 +6,8 @@
 #include <spdlog/spdlog.h>
 
 namespace min_kv {
-    key_value_storage::key_value_storage() = default;
+    key_value_storage::key_value_storage(const std::uint64_t purge_timer_ms)
+        : purge_timer_ms(purge_timer_ms) {}
 
     std::uint64_t key_value_storage::insert_key_value(const std::string &key, std::string value) {
         kv_map::accessor acc;
@@ -89,7 +90,7 @@ namespace min_kv {
             }
             expiration_queue_mutex.unlock();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+            std::this_thread::sleep_for(std::chrono::milliseconds(purge_timer_ms));
         }
     }
 

@@ -12,7 +12,7 @@
 namespace min_kv {
 
     // Message limit for now is 10 MB
-    constexpr std::size_t MAXIMUM_MESSAGE_SIZE = 1024 * 1024 * 10;
+    constexpr std::size_t DEFAULT_MAXIMUM_MESSAGE_SIZE = 1024 * 1024 * 10;
 
     class session;
     typedef std::function<std::string(const std::string&, session &s)> handler_function;
@@ -20,7 +20,8 @@ namespace min_kv {
     class session {
     public:
         virtual ~session();
-        session(asio::ip::tcp::socket socket, handler_function h);
+        session(asio::ip::tcp::socket socket, handler_function h,
+            std::size_t maximum_message_size = DEFAULT_MAXIMUM_MESSAGE_SIZE);
 
         virtual void start();
         void close();
@@ -48,6 +49,8 @@ namespace min_kv {
         handler_function handler;
         std::basic_string<char> read_buffer;
         bool closing = false;
+
+        std::size_t maximum_message_size;
 
         std::optional<user> session_user;
     };
