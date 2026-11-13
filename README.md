@@ -8,6 +8,7 @@ The server is:
 - Concurrent and multithreaded
 - Supports plain TCP and TLS connections
 - Supports optional user authentication
+- Supports expiration and automatic cleanup of entries
 - Designed to be simple and minimal
 
 ## Building
@@ -38,9 +39,9 @@ First build the image:
 podman build -t minkv .
 ```
 
-MinKV requires a config and optionally sqlite3 database file. Put those into a directory and mount them as a Volume.
+MinKV requires a config file and optionally a sqlite3 database file. Put those into a directory and mount them as a Volume.
 Make sure the config.cfg file is set to point at the log and certification files inside the mounted container.
-Then start the container:
+In this example the config file and ``users.db`` is located in the folder ``./minkv-config``:
 ```bash
 podman run -d --rm \
        -p 5555:5555 \
@@ -108,7 +109,7 @@ ERROR "Error message as string literal"
 - ``SET_EX <key> <string> <int>`` Same as SET, but the entry expires in the given amount of milliseconds. 
 - ``DELETE <key>`` Deletes the value stored at the specified key.
 - ``APPEND <key> <string>`` Appends the given string to the existing value. If the key does not exist it will be created. Does not alter the expiration of the key.
-- ``APPEND <key> <string> <int>`` Same as APPEND, but the entries expiration timer is updated by the given integer argument.
+- ``APPEND_EX <key> <string> <int>`` Same as APPEND, but the entries expiration timer is updated by the given integer argument.
 - ``LOGIN <key> <string>`` Special command used for authentication.
   The key is interpreted as the username, and the string literal contains the password.
 - ``CLOSE`` Requests for the server to close the connection
