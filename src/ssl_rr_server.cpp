@@ -27,7 +27,8 @@ namespace min_kv {
                 const auto address = socket.remote_endpoint().address().to_string();
                 if (!ec) {
                     spdlog::info("Opening new TLS session with client {}", address);
-                    std::make_shared<ssl_session>(std::move(socket), ssl_ctx, this->handler)->start();
+                    auto new_session = new ssl_session(std::move(socket), ssl_ctx, this->handler);
+                    new_session->start();
                 }
                 else
                     spdlog::error("Could not open TLS session with client {}. {}", address, ec.message());

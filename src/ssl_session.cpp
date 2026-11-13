@@ -32,13 +32,13 @@ namespace min_kv {
     }
 
     void ssl_session::perform_handshake() {
-        auto self = shared_from_this();
         ssl_stream->async_handshake(asio::ssl::stream_base::server,
-            [this, self](asio::error_code ec) {
+            [this](const asio::error_code ec) {
                 if (!ec)
                     read();
                 else {
                     spdlog::error("Handshake with client {} failed: {}", address, ec.message());
+                    delete this;
                 }
             });
     }

@@ -17,9 +17,9 @@ namespace min_kv {
     class session;
     typedef std::function<std::string(const std::string&, session &s)> handler_function;
 
-    class session : public std::enable_shared_from_this<session> {
+    class session {
     public:
-        virtual ~session() = default;
+        virtual ~session();
         session(asio::ip::tcp::socket socket, handler_function h);
 
         virtual void start();
@@ -29,7 +29,7 @@ namespace min_kv {
         bool read_permission() const;
         bool write_permission() const;
 
-        void set_user(const std::optional<user> &new_user);
+        void set_user(std::optional<user> new_user);
 
     protected:
         virtual void read();

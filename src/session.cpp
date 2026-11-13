@@ -8,6 +8,10 @@
 #include <spdlog/spdlog.h>
 
 namespace min_kv {
+    session::~session() {
+        spdlog::debug("session for {} destroyed", address);
+    }
+
     session::session(asio::ip::tcp::socket socket, handler_function h) :
     session_socket(std::move(socket)), handler(std::move(h)){
         this->address = session_socket.remote_endpoint().address().to_string();
@@ -38,8 +42,8 @@ namespace min_kv {
         return false;
     }
 
-    void session::set_user(const std::optional<user> &new_user) {
-        this->session_user = new_user;
+    void session::set_user(std::optional<user> new_user) {
+        this->session_user = std::move(new_user);
     }
 
     void session::read() {
@@ -51,33 +55,36 @@ namespace min_kv {
     }
 
     void session::build_read_write() {
-        auto self = shared_from_this();
 
-        this->read_function = [this, self](std::error_code ec, std::size_t size) {
+        this->read_function = [this](const std::error_code ec, std::size_t size) {
             if (!ec) {
-                std::string reply = handler(std::string(read_buffer), *this);
-                write(reply);
-                self->read_buffer.clear();
-            } else if (ec == asio::error::eof) {
-                spdlog::info("Connection to client {} has been closed", address);
+                const std::string reply = this->handler(std::string(this->read_buffer), *this);
+                this->write(reply);
+                this->read_buffer.clear();
+                return;
+            } if (ec == asio::error::eof) {
+                spdlog::info("Connection to client {} has been closed", this->address);
             } else if (ec == asio::error::not_found) {
-                spdlog::warn("Message from {} exceeded memory limit. Shutting down connection", address);
+                spdlog::warn("Message from {} exceeded memory limit. Shutting down connection", this->address);
+            } else {
+                spdlog::error("Could not read from socket connection to client {}. {}", this->address, ec.message());
             }
-            else {
-                spdlog::error("Could not read from socket connection to client {}. {}", address, ec.message());
-            }
+            delete this;
         };
 
-        this->write_function = [this, self] (std::error_code ec, std::size_t size) {
-            if (closing) {
-                internal_close();
-                spdlog::info("Closing connection to client {}", address);
+        this->write_function = [this] (const std::error_code ec, std::size_t size) {
+            if (this->closing) {
+                this->internal_close();
+                spdlog::info("Closing connection to client {}", this->address);
+                delete this;
                 return;
             }
+
             if (!ec) {
-                read();
+                this->read();
             } else {
-                spdlog::error("Could not write to socket connecting to client {}. {}", address, ec.message());
+                spdlog::error("Could not write to socket connecting to client {}. {}", this->address, ec.message());
+                delete this;
             }
         };
     }

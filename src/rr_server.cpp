@@ -19,7 +19,8 @@ namespace min_kv {
                 const auto address = socket.remote_endpoint().address().to_string();
                 if (!ec) {
                     spdlog::info("Opening new TCP session with address {}", address);
-                    std::make_shared<session>(std::move(socket), this->handler)->start();
+                    auto new_session = new session(std::move(socket), this->handler);
+                    new_session->start();
                 }
                 else
                     spdlog::error("Could not open session with address {}", address);
